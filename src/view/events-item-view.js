@@ -2,7 +2,7 @@ import {createElement} from '../render.js';
 import { humanizeEventDueDate, capitalizeFirstLetter, formatDateDifference } from '../utils.js';
 
 function createEventsItemTemplate(event, destination, offersByType) {
-  const {type, dateFrom, dateTo, price, isFavorite} = event;
+  const {type, dateFrom, dateTo, basePrice, isFavorite} = event;
   const eventOffers = offersByType.filter((offerType) => event.offers.includes(offerType.id));
 
   return (
@@ -22,7 +22,7 @@ function createEventsItemTemplate(event, destination, offersByType) {
           <p class="event__duration">${formatDateDifference(dateFrom, dateTo)}</p>
         </div>
         <p class="event__price">
-          &euro;&nbsp;<span class="event__price-value">${price}</span>
+          &euro;&nbsp;<span class="event__price-value">${basePrice}</span>
         </p>
         <h4 class="visually-hidden">Offers:</h4>
         <ul class="event__selected-offers">
@@ -30,7 +30,7 @@ function createEventsItemTemplate(event, destination, offersByType) {
       `<li class="event__offer">
         <span class="event__offer-title">${offer.title}</span>
         &plus;&euro;&nbsp;
-        <span class="event__offer-price">${offer.price}</span>
+        <span class="event__offer-price">${offer.basePrice}</span>
       </li>`)).join('')}
         </ul>
         <button class="event__favorite-btn ${isFavorite ? 'event__favorite-btn--active' : ''}" type="button">
