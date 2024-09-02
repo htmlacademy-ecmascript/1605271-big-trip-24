@@ -30,7 +30,7 @@ function createEventsItemTemplate(event, destination, offersByType) {
       `<li class="event__offer">
         <span class="event__offer-title">${offer.title}</span>
         &plus;&euro;&nbsp;
-        <span class="event__offer-price">${offer.basePrice}</span>
+        <span class="event__offer-price">${offer.price}</span>
       </li>`)).join('')}
         </ul>
         <button class="event__favorite-btn ${isFavorite ? 'event__favorite-btn--active' : ''}" type="button">
