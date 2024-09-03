@@ -13,7 +13,7 @@ const mockEvents = [
     id: 2,
     type: 'bus',
     destination: 2,
-    dateFrom: '2024-06-15T12:00:00.000Z',
+    dateFrom: '2024-06-15T13:00:00.000Z',
     dateTo: '2024-06-15T17:00:00.000Z',
     basePrice: 500,
     offers: [1],
@@ -21,4 +21,9 @@ const mockEvents = [
   },
 ];
 
-export {mockEvents};
+function getEvents() {
+  return mockEvents;
+}
+
+export {getEvents};
+

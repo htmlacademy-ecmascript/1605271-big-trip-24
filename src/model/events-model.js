@@ -1,11 +1,11 @@
-import { mockDestinations } from '../mock/destinations.js';
-import { mockEvents } from '../mock/events.js';
-import { mockOffers } from '../mock/offers.js';
+import { getDestinations } from '../mock/destinations.js';
+import { getEvents } from '../mock/events.js';
+import { getOffers } from '../mock/offers.js';
 
 export default class EventsModel {
-  events = mockEvents;
-  destinations = mockDestinations;
-  offers = mockOffers;
+  events = getEvents();
+  destinations = getDestinations();
+  offers = getOffers();
 
   getEvents() {
     return this.events;

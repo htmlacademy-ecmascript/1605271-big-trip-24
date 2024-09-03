@@ -36,4 +36,8 @@ const mockOffers = [
   },
 ];
 
-export {mockOffers};
+function getOffers() {
+  return mockOffers;
+}
+
+export {getOffers};

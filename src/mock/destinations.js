@@ -3,7 +3,12 @@ const mockDestinations = [
     id: 1,
     name: 'Amsterdam',
     description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras aliquet varius magna, non porta ligula feugiat eget. Fusce tristique felis at fermentum pharetra.',
-    pictures: [],
+    pictures: [
+      {
+        src: `https://loremflickr.com/248/152?random=${Math.random()}`,
+        description: 'Тест',
+      },
+    ],
   },
   {
     id: 2,
@@ -33,4 +38,8 @@ const mockDestinations = [
   },
 ];
 
-export {mockDestinations};
+function getDestinations() {
+  return mockDestinations;
+}
+
+export {getDestinations};
