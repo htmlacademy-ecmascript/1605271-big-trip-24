@@ -1,5 +1,5 @@
 import {createElement} from '../render.js';
-import { humanizeEventDueDate, capitalizeFirstLetter, formatDateDifference } from '../utils.js';
+import { humanizeEventDueDate, capitalizeFirstLetter, formatDateDifference, getOffersByType, getDestinationById } from '../utils.js';
 
 function createEventsItemTemplate(event, destination, offersByType) {
   const {type, dateFrom, dateTo, basePrice, isFavorite} = event;
@@ -48,14 +48,18 @@ function createEventsItemTemplate(event, destination, offersByType) {
 }
 
 export default class EventsItemView {
-  event;
-  destination;
-  offersByType;
+  event = null;
+  destination = null;
+  offersByType = null;
+  allDestinations = [];
+  allOffers = [];
 
-  constructor({event, destination, offersByType}) {
+  constructor({event, allDestinations, allOffers}) {
     this.event = event;
-    this.destination = destination;
-    this.offersByType = offersByType;
+    this.allDestinations = allDestinations;
+    this.allOffers = allOffers;
+    this.destination = getDestinationById(this.allDestinations, this.event.destination);
+    this.offersByType = getOffersByType(this.allOffers, this.event.type);
   }
 
   getTemplate() {

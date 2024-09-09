@@ -2,15 +2,16 @@ import SortView from '../view/sort-view.js';
 import EventsListView from '../view/events-list-view.js';
 import EditEventView from '../view/edit-event-view.js';
 import EventsItemView from '../view/events-item-view.js';
+import { BLANK_EVENT } from '../const.js';
 import {render} from '../render.js';
 
 export default class BoardPresenter {
   eventsListComponent = new EventsListView();
-  eventsContainer;
-  eventsModel;
-  events;
-  destinations;
-  offers;
+  eventsContainer = null;
+  eventsModel = null;
+  events = [];
+  destinations = [];
+  offers = [];
 
   constructor({eventsContainer, eventsModel}) {
     this.eventsContainer = eventsContainer;
@@ -24,30 +25,24 @@ export default class BoardPresenter {
     render(new SortView(), this.eventsContainer);
     render(this.eventsListComponent, this.eventsContainer);
     render(new EditEventView({
-      event: this.events[1],
-      destination: this.eventsModel.getDestinationById(this.events[1].destination),
-      offersByType: this.eventsModel.getOffersByType(this.events[1].type),
+      event: BLANK_EVENT,
       allDestinations: this.destinations,
-      allOffers: this.offers,
-      isCreate: true
+      allOffers: this.offers
     }),
     this.eventsListComponent.getElement());
     render(new EditEventView({
-      event: this.events[1],
-      destination: this.eventsModel.getDestinationById(this.events[1].destination),
-      offersByType: this.eventsModel.getOffersByType(this.events[1].type),
+      event: this.events[0],
       allDestinations: this.destinations,
-      allOffers: this.offers,
-      isCreate: false
+      allOffers: this.offers
     }),
     this.eventsListComponent.getElement());
-    this.events.forEach((event) => {
+    for (let i = 1; i < this.events.length; i++) {
       render(new EventsItemView({
-        event: event,
-        destination: this.eventsModel.getDestinationById(event.destination),
-        offersByType: this.eventsModel.getOffersByType(event.type),
+        event: this.events[i],
+        allDestinations: this.destinations,
+        allOffers: this.offers
       }),
       this.eventsListComponent.getElement());
-    });
+    }
   }
 }

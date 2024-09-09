@@ -35,4 +35,12 @@ function formatDateDifference(startDate, endDate) {
   return result.trim();
 }
 
-export {humanizeEventDueDate, capitalizeFirstLetter, formatDateDifference };
+function getOffersByType(offers, type) {
+  return offers.find((offer) => offer.type === type).offers;
+}
+
+function getDestinationById(destinations, id) {
+  return destinations.find((destination) => destination.id === id);
+}
+
+export {humanizeEventDueDate, capitalizeFirstLetter, formatDateDifference, getOffersByType, getDestinationById };

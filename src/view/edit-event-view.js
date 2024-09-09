@@ -1,11 +1,13 @@
 import {createElement} from '../render.js';
-import {EVENT_TYPES, INPUT_DATE_FORMAT, BLANK_EVENT} from '../const.js';
-import { humanizeEventDueDate } from '../utils.js';
+import {INPUT_DATE_FORMAT, BLANK_EVENT} from '../const.js';
+import { capitalizeFirstLetter, humanizeEventDueDate, getOffersByType, getDestinationById } from '../utils.js';
 
-function createEventTypesTemplate(eventType) {
+function createEventTypesTemplate(allOffers, eventType) {
+  const eventTypes = allOffers.map((offer) => offer.type);
+
   return(
     `
-      ${EVENT_TYPES.map((type) => {
+      ${eventTypes.map((type) => {
       const lowercaseType = type.toLowerCase();
 
       return (
@@ -23,7 +25,7 @@ function createEventTypesTemplate(eventType) {
             class="event__type-label event__type-label--${lowercaseType}"
             for="event-type-${lowercaseType}-1"
           >
-          ${type}
+          ${capitalizeFirstLetter(type)}
           </label>
         </div>
         `
@@ -33,14 +35,9 @@ function createEventTypesTemplate(eventType) {
   );
 }
 
-function createOffersTemplate(offersByType, eventOffers, allOffers, isCreate) {
+function createOffersTemplate(offersByType, eventOffers) {
   if (offersByType.length === 0) {
     return '';
-  }
-
-  if (isCreate) {
-    offersByType = allOffers.find((offer) => offer.type === BLANK_EVENT.type).offers;
-    eventOffers = [];
   }
 
   return (
@@ -53,14 +50,14 @@ function createOffersTemplate(offersByType, eventOffers, allOffers, isCreate) {
         <div class="event__offer-selector">
           <input
             class="event__offer-checkbox visually-hidden"
-            id="event-offer-${offer.title}-1"
+            id="event-offer-${offer.id}-1"
             type="checkbox"
-            name="event-offer-${offer.title}"
+            name="event-offer-${offer.id}"
             ${eventOffers.includes(offer.id) ? 'checked' : '' }
           >
           <label
             class="event__offer-label"
-            for="event-offer-${offer.title}-1"
+            for="event-offer-${offer.id}-1"
           >
             <span class="event__offer-title">${offer.title}</span>
             &plus;&euro;&nbsp;
@@ -75,6 +72,10 @@ function createOffersTemplate(offersByType, eventOffers, allOffers, isCreate) {
 }
 
 function createDestinationTemplate(destination) {
+  if (destination.name.length === 0) {
+    return '';
+  }
+
   const {pictures, description} = destination;
 
   return (
@@ -109,8 +110,8 @@ function createOptionsTemplate(destinations) {
 function createEditEventTemplate(event, destination, offersByType, allDestinations, allOffers, isCreate) {
   const {type, offers, basePrice, dateFrom, dateTo} = event;
 
-  const typesTemplate = createEventTypesTemplate(type);
-  const offersTemplate = createOffersTemplate(offersByType, offers, allOffers, isCreate);
+  const typesTemplate = createEventTypesTemplate(allOffers, type);
+  const offersTemplate = createOffersTemplate(offersByType, offers);
   const destinationTemplate = createDestinationTemplate(destination);
   const optionsTemplate = createOptionsTemplate(allDestinations);
 
@@ -121,7 +122,7 @@ function createEditEventTemplate(event, destination, offersByType, allDestinatio
           <div class="event__type-wrapper">
             <label class="event__type  event__type-btn" for="event-type-toggle-1">
               <span class="visually-hidden">Choose event type</span>
-              <img class="event__type-icon" width="17" height="17" src="img/icons/${isCreate ? BLANK_EVENT.type : type}.png" alt="Event type icon">
+              <img class="event__type-icon" width="17" height="17" src="img/icons/${type}.png" alt="Event type icon">
             </label>
             <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
 
@@ -135,9 +136,9 @@ function createEditEventTemplate(event, destination, offersByType, allDestinatio
 
           <div class="event__field-group  event__field-group--destination">
             <label class="event__label  event__type-output" for="event-destination-1">
-            ${isCreate ? BLANK_EVENT.type : type}
+            ${type}
             </label>
-            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${isCreate ? '' : destination.name}" list="destination-list-1">
+            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.name}" list="destination-list-1">
             <datalist id="destination-list-1">
               ${optionsTemplate}
             </datalist>
@@ -145,10 +146,10 @@ function createEditEventTemplate(event, destination, offersByType, allDestinatio
 
           <div class="event__field-group  event__field-group--time">
             <label class="visually-hidden" for="event-start-time-1">From</label>
-            <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${isCreate ? '' : humanizeEventDueDate(dateFrom, INPUT_DATE_FORMAT)}">
+            <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${humanizeEventDueDate(dateFrom, INPUT_DATE_FORMAT)}">
             &mdash;
             <label class="visually-hidden" for="event-end-time-1">To</label>
-            <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${isCreate ? '' : humanizeEventDueDate(dateTo, INPUT_DATE_FORMAT)}">
+            <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${humanizeEventDueDate(dateTo, INPUT_DATE_FORMAT)}">
           </div>
 
           <div class="event__field-group  event__field-group--price">
@@ -156,7 +157,7 @@ function createEditEventTemplate(event, destination, offersByType, allDestinatio
               <span class="visually-hidden">Price</span>
               &euro;
             </label>
-            <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${isCreate ? BLANK_EVENT.basePrice : basePrice}">
+            <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${basePrice}">
           </div>
 
           <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
@@ -175,7 +176,7 @@ function createEditEventTemplate(event, destination, offersByType, allDestinatio
         </header>
         <section class="event__details">
           ${offersTemplate}
-          ${isCreate ? '' : destinationTemplate}
+          ${destinationTemplate}
         </section>
       </form>
     </li>`
@@ -183,20 +184,20 @@ function createEditEventTemplate(event, destination, offersByType, allDestinatio
 }
 
 export default class EditEventView {
-  event;
-  destination;
-  offersByType;
-  allDestinations;
-  allOffers;
-  isCreate;
+  event = null;
+  destination = null;
+  offersByType = [];
+  allDestinations = [];
+  allOffers = [];
+  isCreate = false;
 
-  constructor({event, destination, offersByType, allDestinations, allOffers, isCreate}) {
+  constructor({event, allDestinations, allOffers}) {
     this.event = event;
-    this.destination = destination;
-    this.offersByType = offersByType;
     this.allDestinations = allDestinations;
     this.allOffers = allOffers;
-    this.isCreate = isCreate;
+    this.isCreate = !this.event.id;
+    this.destination = (this.isCreate) ? BLANK_EVENT.destination : getDestinationById(this.allDestinations, this.event.destination);
+    this.offersByType = getOffersByType(this.allOffers, this.event.type);
   }
 
   getTemplate() {
