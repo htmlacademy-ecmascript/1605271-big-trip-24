@@ -1,6 +1,10 @@
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 dayjs.extend(duration);
+dayjs.extend(isSameOrAfter);
+dayjs.extend(isSameOrBefore);
 
 function humanizeEventDueDate(dueDate, dateFormat) {
   return dueDate ? dayjs(dueDate).format(dateFormat) : '';
@@ -43,4 +47,19 @@ function getDestinationById(destinations, id) {
   return destinations.find((destination) => destination.id === id);
 }
 
-export {humanizeEventDueDate, capitalizeFirstLetter, formatDateDifference, getOffersByType, getDestinationById };
+function isPointFuture(startDate) {
+  const now = dayjs();
+  return dayjs(startDate).isAfter(now);
+}
+
+function isPointPresent(startDate, endDate) {
+  const now = dayjs();
+  return dayjs(startDate).isSameOrBefore(now) && dayjs(endDate).isSameOrAfter(now);
+}
+
+function isPointPast(endDate) {
+  const now = dayjs();
+  return dayjs(endDate).isBefore(now);
+}
+
+export {humanizeEventDueDate, capitalizeFirstLetter, formatDateDifference, getOffersByType, getDestinationById, isPointFuture, isPointPresent, isPointPast };

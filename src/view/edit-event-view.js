@@ -1,6 +1,6 @@
-import {createElement} from '../render.js';
+import AbstractView from '../framework/view/abstract-view.js';
 import {INPUT_DATE_FORMAT, BLANK_EVENT} from '../const.js';
-import { capitalizeFirstLetter, humanizeEventDueDate, getOffersByType, getDestinationById } from '../utils.js';
+import { capitalizeFirstLetter, humanizeEventDueDate, getOffersByType, getDestinationById } from '../utils/event.js';
 
 function createEventTypesTemplate(allOffers, eventType) {
   const eventTypes = allOffers.map((offer) => offer.type);
@@ -183,36 +183,42 @@ function createEditEventTemplate(event, destination, offersByType, allDestinatio
   );
 }
 
-export default class EditEventView {
-  event = null;
-  destination = null;
-  offersByType = [];
-  allDestinations = [];
-  allOffers = [];
-  isCreate = false;
+export default class EditEventView extends AbstractView {
+  #event = null;
+  #destination = null;
+  #offersByType = [];
+  #allDestinations = [];
+  #allOffers = [];
+  #isCreate = false;
+  #handleEditClick = null;
+  #handleFormSubmit = null;
 
-  constructor({event, allDestinations, allOffers}) {
-    this.event = event;
-    this.allDestinations = allDestinations;
-    this.allOffers = allOffers;
-    this.isCreate = !this.event.id;
-    this.destination = (this.isCreate) ? BLANK_EVENT.destination : getDestinationById(this.allDestinations, this.event.destination);
-    this.offersByType = getOffersByType(this.allOffers, this.event.type);
+  constructor({event, allDestinations, allOffers, onEditClick, onFormSubmit}) {
+    super();
+    this.#event = event;
+    this.#allDestinations = allDestinations;
+    this.#allOffers = allOffers;
+    this.#isCreate = !this.#event.id;
+    this.#destination = (this.#isCreate) ? BLANK_EVENT.destination : getDestinationById(this.#allDestinations, this.#event.destination);
+    this.#offersByType = getOffersByType(this.#allOffers, this.#event.type);
+    this.#handleEditClick = onEditClick;
+    this.#handleFormSubmit = onFormSubmit;
+
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#editClickHandler);
+    this.element.querySelector('form').addEventListener('submit', this.#formSubmitHandler);
   }
 
-  getTemplate() {
-    return createEditEventTemplate(this.event, this.destination, this.offersByType, this.allDestinations, this.allOffers, this.isCreate);
+  get template() {
+    return createEditEventTemplate(this.#event, this.#destination, this.#offersByType, this.#allDestinations, this.#allOffers, this.#isCreate);
   }
 
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
-    }
+  #editClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleEditClick();
+  };
 
-    return this.element;
-  }
-
-  removeElement() {
-    this.element = null;
-  }
+  #formSubmitHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleFormSubmit();
+  };
 }

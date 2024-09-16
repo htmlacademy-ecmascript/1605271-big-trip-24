@@ -10,5 +10,11 @@ const BLANK_EVENT = {
   offers: [],
   isFavorite: false,
 };
+const FilterType = {
+  EVERYTHING: 'everything',
+  FUTURE: 'future',
+  PRESENT: 'present',
+  PAST: 'past',
+};
 
-export {INPUT_DATE_FORMAT, BLANK_EVENT};
+export {INPUT_DATE_FORMAT, BLANK_EVENT, FilterType};
