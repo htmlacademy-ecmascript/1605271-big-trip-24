@@ -10,6 +10,7 @@ const BLANK_EVENT = {
   offers: [],
   isFavorite: false,
 };
+
 const FilterType = {
   EVERYTHING: 'everything',
   FUTURE: 'future',
