@@ -79,8 +79,8 @@ export default class BoardPresenter {
     render(new SortView(), this.#eventsContainer);
     render(this.#eventsListComponent, this.#eventsContainer);
 
-    for (let i = 0; i < this.#events.length; i++) {
-      this.#renderEvent(this.#events[i], this.#destinations, this.#offers);
-    }
+    this.#events.forEach((event) => {
+      this.#renderEvent(event, this.#destinations, this.#offers);
+    });
   }
 }
