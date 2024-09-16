@@ -17,5 +17,4 @@ const FilterType = {
   PAST: 'past',
 };
 
-
 export {INPUT_DATE_FORMAT, BLANK_EVENT, FilterType};

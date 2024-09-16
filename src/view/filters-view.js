@@ -1,5 +1,4 @@
 import AbstractView from '../framework/view/abstract-view.js';
-import {capitalizeFirstLetter} from '../utils/event.js';
 import {generateFilter} from '../mock/filters.js';
 
 function createFilterItemTemplate(filter, isChecked) {
@@ -19,7 +18,7 @@ function createFilterItemTemplate(filter, isChecked) {
           class="trip-filters__filter-label"
           for="filter-${type}"
         >
-        ${capitalizeFirstLetter(type)}
+        ${type}
         </label>
       </div
     >`
@@ -42,7 +41,7 @@ function createFilterTemplate(filterItems) {
 }
 
 export default class FilterView extends AbstractView {
-  #filters = null;
+  #filters = [];
 
   constructor() {
     super();

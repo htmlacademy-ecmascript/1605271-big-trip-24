@@ -47,19 +47,19 @@ function getDestinationById(destinations, id) {
   return destinations.find((destination) => destination.id === id);
 }
 
-function isTaskFuture(startDate) {
+function isPointFuture(startDate) {
   const now = dayjs();
   return dayjs(startDate).isAfter(now);
 }
 
-function isTaskPresent(startDate, endDate) {
+function isPointPresent(startDate, endDate) {
   const now = dayjs();
   return dayjs(startDate).isSameOrBefore(now) && dayjs(endDate).isSameOrAfter(now);
 }
 
-function isTaskPast(endDate) {
+function isPointPast(endDate) {
   const now = dayjs();
   return dayjs(endDate).isBefore(now);
 }
 
-export {humanizeEventDueDate, capitalizeFirstLetter, formatDateDifference, getOffersByType, getDestinationById, isTaskFuture, isTaskPresent, isTaskPast };
+export {humanizeEventDueDate, capitalizeFirstLetter, formatDateDifference, getOffersByType, getDestinationById, isPointFuture, isPointPresent, isPointPast };
