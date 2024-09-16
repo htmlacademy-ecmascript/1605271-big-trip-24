@@ -1,5 +1,6 @@
 import AbstractView from '../framework/view/abstract-view.js';
 import {capitalizeFirstLetter} from '../utils/event.js';
+import {generateFilter} from '../mock/filters.js';
 
 function createFilterItemTemplate(filter, isChecked) {
   const {type} = filter;
@@ -43,9 +44,9 @@ function createFilterTemplate(filterItems) {
 export default class FilterView extends AbstractView {
   #filters = null;
 
-  constructor({filters}) {
+  constructor() {
     super();
-    this.#filters = filters;
+    this.#filters = generateFilter();
   }
 
   get template() {
