@@ -10,7 +10,7 @@ const BLANK_EVENT = {
   offers: [],
   isFavorite: false,
 };
-
+const EDIT_CLASS = 'event--edit';
 const FilterType = {
   EVERYTHING: 'everything',
   FUTURE: 'future',
@@ -18,4 +18,4 @@ const FilterType = {
   PAST: 'past',
 };
 
-export {INPUT_DATE_FORMAT, BLANK_EVENT, FilterType};
+export {INPUT_DATE_FORMAT, BLANK_EVENT, FilterType, EDIT_CLASS};

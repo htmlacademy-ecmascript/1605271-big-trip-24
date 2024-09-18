@@ -1,18 +1,21 @@
 import SortView from '../view/sort-view.js';
 import EventsListView from '../view/events-list-view.js';
-import EditEventView from '../view/edit-event-view.js';
-import EventsItemView from '../view/events-item-view.js';
 import NoEventsView from '../view/no-events-view.js';
-import {BLANK_EVENT} from '../const.js';
-import {render, replace} from '../framework/render.js';
+import {render} from '../framework/render.js';
+import EventPresenter from './event-presenter.js';
+import {updateEvent} from '../utils/event.js';
 
 export default class BoardPresenter {
+  #sortComponent = new SortView();
+  #noEventsComponent = new NoEventsView();
   #eventsListComponent = new EventsListView();
   #eventsContainer = null;
   #eventsModel = null;
   #events = [];
   #destinations = [];
   #offers = [];
+
+  #eventPresenters = new Map();
 
   constructor({eventsContainer, eventsModel}) {
     this.#eventsContainer = eventsContainer;
@@ -26,61 +29,53 @@ export default class BoardPresenter {
     this.#renderEvents();
   }
 
-  #renderEvent(event, allDestinations, allOffers) {
-    const escKeyDownHandler = (evt) => {
-      if (evt.key === 'Escape') {
-        evt.preventDefault();
-        replaceFormToCard();
-        document.removeEventListener('keydown', escKeyDownHandler);
-      }
-    };
+  #handleModeChange = () => {
+    this.#eventPresenters.forEach((presenter) => presenter.resetView());
+  };
 
-    const eventComponent = new EventsItemView({
-      event,
-      allDestinations,
-      allOffers,
-      onEditClick: () => {
-        replaceCardToForm();
-        document.addEventListener('keydown', escKeyDownHandler);
-      },
-    });
+  #handleEventChange = (updatedEvent) => {
+    this.#events = updateEvent(this.#events, updatedEvent);
+    this.#eventPresenters.get(updatedEvent.id).init(updatedEvent, this.#destinations, this.#offers);
+  };
 
-    const eventEditComponent = new EditEventView({
-      event,
-      allDestinations,
-      allOffers,
-      onEditClick: () => {
-        replaceFormToCard();
-        document.removeEventListener('keydown', escKeyDownHandler);
-      },
-      onFormSubmit: () => {
-        replaceFormToCard();
-        document.removeEventListener('keydown', escKeyDownHandler);
-      },
-    });
-
-    function replaceCardToForm() {
-      replace(eventEditComponent, eventComponent);
-    }
-
-    function replaceFormToCard() {
-      replace(eventComponent, eventEditComponent);
-    }
-
-    render(eventComponent, this.#eventsListComponent.element);
+  #renderSort() {
+    render(this.#sortComponent, this.#eventsContainer);
   }
 
-  #renderEvents() {
-    if (this.#events.length === 0) {
-      render(new NoEventsView(), this.#eventsContainer);
-      return;
-    }
+  #renderNoEvents() {
+    render(this.#noEventsComponent, this.#eventsContainer);
+  }
 
-    render(new SortView(), this.#eventsContainer);
+  #clearEventsList() {
+    this.#eventPresenters.forEach((presenter) => presenter.destroy());
+    this.#eventPresenters.clear();
+  }
+
+  #renderEventsList() {
     render(this.#eventsListComponent, this.#eventsContainer);
 
     this.#events.forEach((event) => {
       this.#renderEvent(event, this.#destinations, this.#offers);
     });
+  }
+
+  #renderEvent(event, allDestinations, allOffers) {
+    const eventPresenter = new EventPresenter({
+      eventsListComponent: this.#eventsListComponent,
+      onDataChange: this.#handleEventChange,
+      onModeChange: this.#handleModeChange
+    });
+    eventPresenter.init(event, allDestinations, allOffers);
+    this.#eventPresenters.set(event.id, eventPresenter);
+  }
+
+  #renderEvents() {
+    if (this.#events.length === 0) {
+      this.#renderNoEvents();
+      return;
+    }
+
+    this.#renderSort();
+    this.#renderEventsList();
   }
 }
