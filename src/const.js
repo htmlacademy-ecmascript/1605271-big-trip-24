@@ -16,5 +16,10 @@ const FilterType = {
   PRESENT: 'present',
   PAST: 'past',
 };
+const SortType = {
+  DAY: 'day',
+  TIME: 'time',
+  PRICE: 'price',
+};
 
-export {INPUT_DATE_FORMAT, BLANK_EVENT, FilterType};
+export {INPUT_DATE_FORMAT, BLANK_EVENT, FilterType, SortType};
