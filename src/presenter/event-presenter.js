@@ -39,7 +39,7 @@ export default class EventPresenter {
       event: this.#event,
       allDestinations: this.#destinations,
       allOffers: this.#offers,
-      onEditClick: this.#handleEditClick,
+      onOpenFormClick: () => this.#replaceEventToForm(),
       onFavoriteClick: this.#handleFavoriteClick
     });
 
@@ -47,7 +47,7 @@ export default class EventPresenter {
       event: this.#event,
       allDestinations: this.#destinations,
       allOffers: this.#offers,
-      onEditClick: this.#handleEditClick,
+      onCloseFormClick: () => this.#replaceFormToEvent(),
       onFormSubmit: this.#handleFormSubmit
     });
 
@@ -75,18 +75,18 @@ export default class EventPresenter {
 
   resetView() {
     if (this.#mode !== Mode.DEFAULT) {
-      this.#replaceFormToCard();
+      this.#replaceFormToEvent();
     }
   }
 
-  #replaceCardToForm() {
+  #replaceEventToForm() {
     replace(this.#eventEditComponent, this.#eventComponent);
     document.addEventListener('keydown', this.#escKeyDownHandler);
     this.#handleModeChange();
     this.#mode = Mode.EDITING;
   }
 
-  #replaceFormToCard() {
+  #replaceFormToEvent() {
     replace(this.#eventComponent, this.#eventEditComponent);
     document.removeEventListener('keydown', this.#escKeyDownHandler);
     this.#mode = Mode.DEFAULT;
@@ -95,21 +95,13 @@ export default class EventPresenter {
   #escKeyDownHandler = (evt) => {
     if (evt.key === 'Escape') {
       evt.preventDefault();
-      this.#replaceFormToCard();
-    }
-  };
-
-  #handleEditClick = (evt) => {
-    if (evt.target.closest('.event').classList.contains(EDIT_CLASS)) {
-      this.#replaceFormToCard();
-    } else {
-      this.#replaceCardToForm();
+      this.#replaceFormToEvent();
     }
   };
 
   #handleFormSubmit = (event) => {
     this.#handleDataChange(event);
-    this.#replaceFormToCard();
+    this.#replaceFormToEvent();
   };
 
   #handleFavoriteClick = () => {
