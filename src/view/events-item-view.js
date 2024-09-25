@@ -53,18 +53,21 @@ export default class EventsItemView extends AbstractView {
   #offersByType = null;
   #allDestinations = [];
   #allOffers = [];
-  #handleEditClick = null;
+  #handleOpenFormClick = null;
+  #handleFavoriteClick = null;
 
-  constructor({event, allDestinations, allOffers, onEditClick}) {
+  constructor({event, allDestinations, allOffers, onOpenFormClick, onFavoriteClick}) {
     super();
     this.#event = event;
     this.#allDestinations = allDestinations;
     this.#allOffers = allOffers;
     this.#destination = getDestinationById(this.#allDestinations, this.#event.destination);
     this.#offersByType = getOffersByType(this.#allOffers, this.#event.type);
-    this.#handleEditClick = onEditClick;
+    this.#handleOpenFormClick = onOpenFormClick;
+    this.#handleFavoriteClick = onFavoriteClick;
 
     this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#editClickHandler);
+    this.element.querySelector('.event__favorite-btn').addEventListener('click', this.#favoriteClickHandler);
   }
 
   get template() {
@@ -73,6 +76,11 @@ export default class EventsItemView extends AbstractView {
 
   #editClickHandler = (evt) => {
     evt.preventDefault();
-    this.#handleEditClick();
+    this.#handleOpenFormClick(evt);
+  };
+
+  #favoriteClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleFavoriteClick();
   };
 }

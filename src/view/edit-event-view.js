@@ -190,10 +190,10 @@ export default class EditEventView extends AbstractView {
   #allDestinations = [];
   #allOffers = [];
   #isCreate = false;
-  #handleEditClick = null;
+  #handleCloseFormClick = null;
   #handleFormSubmit = null;
 
-  constructor({event, allDestinations, allOffers, onEditClick, onFormSubmit}) {
+  constructor({event, allDestinations, allOffers, onCloseFormClick, onFormSubmit}) {
     super();
     this.#event = event;
     this.#allDestinations = allDestinations;
@@ -201,7 +201,7 @@ export default class EditEventView extends AbstractView {
     this.#isCreate = !this.#event.id;
     this.#destination = (this.#isCreate) ? BLANK_EVENT.destination : getDestinationById(this.#allDestinations, this.#event.destination);
     this.#offersByType = getOffersByType(this.#allOffers, this.#event.type);
-    this.#handleEditClick = onEditClick;
+    this.#handleCloseFormClick = onCloseFormClick;
     this.#handleFormSubmit = onFormSubmit;
 
     this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#editClickHandler);
@@ -214,11 +214,11 @@ export default class EditEventView extends AbstractView {
 
   #editClickHandler = (evt) => {
     evt.preventDefault();
-    this.#handleEditClick();
+    this.#handleCloseFormClick(evt);
   };
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
-    this.#handleFormSubmit();
+    this.#handleFormSubmit(this.#event);
   };
 }

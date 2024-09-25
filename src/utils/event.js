@@ -62,4 +62,8 @@ function isPointPast(endDate) {
   return dayjs(endDate).isBefore(now);
 }
 
-export {humanizeEventDueDate, capitalizeFirstLetter, formatDateDifference, getOffersByType, getDestinationById, isPointFuture, isPointPresent, isPointPast };
+function updateEvent(events, update) {
+  return events.map((event) => event.id === update.id ? update : event);
+}
+
+export {humanizeEventDueDate, capitalizeFirstLetter, formatDateDifference, getOffersByType, getDestinationById, isPointFuture, isPointPresent, isPointPast, updateEvent };
