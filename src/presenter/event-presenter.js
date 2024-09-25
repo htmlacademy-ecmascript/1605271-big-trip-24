@@ -1,7 +1,6 @@
 import {render, replace, remove} from '../framework/render.js';
 import EditEventView from '../view/edit-event-view.js';
 import EventsItemView from '../view/events-item-view.js';
-import {EDIT_CLASS} from '../const.js';
 
 const Mode = {
   DEFAULT: 'DEFAULT',
