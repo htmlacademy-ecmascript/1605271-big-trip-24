@@ -66,4 +66,38 @@ function updateEvent(events, update) {
   return events.map((event) => event.id === update.id ? update : event);
 }
 
-export {humanizeEventDueDate, capitalizeFirstLetter, formatDateDifference, getOffersByType, getDestinationById, isPointFuture, isPointPresent, isPointPast, updateEvent };
+function getWeightForNullValue(valueA, valueB) {
+  if (valueA === null && valueB === null) {
+    return 0;
+  }
+
+  if (valueA === null) {
+    return 1;
+  }
+
+  if (valueB === null) {
+    return -1;
+  }
+
+  return null;
+}
+
+function sortTime(eventA, eventB) {
+  const durationA = dayjs(eventA.dateTo).diff(dayjs(eventA.dateFrom));
+  const durationB = dayjs(eventB.dateTo).diff(dayjs(eventB.dateFrom));
+
+  const weight = getWeightForNullValue(eventA.duration, eventB.duration);
+
+  return weight ?? durationB - durationA;
+}
+
+function sortPrice(eventA, eventB) {
+  const priceA = eventA.basePrice;
+  const priceB = eventB.basePrice;
+
+  const weight = getWeightForNullValue(eventA.price, eventB.price);
+
+  return weight ?? priceB - priceA;
+}
+
+export {humanizeEventDueDate, capitalizeFirstLetter, formatDateDifference, getOffersByType, getDestinationById, isPointFuture, isPointPresent, isPointPast, updateEvent, sortTime, sortPrice};
