@@ -17,9 +17,31 @@ const FilterType = {
   PAST: 'past',
 };
 const SortType = {
-  DAY: 'day',
-  TIME: 'time',
-  PRICE: 'price',
+  DAY: {
+    type: 'day',
+    isChecked: true,
+    isDisabled: false,
+  },
+  EVENT: {
+    type: 'event',
+    isChecked: false,
+    isDisabled: true,
+  },
+  TIME: {
+    type: 'time',
+    isChecked: false,
+    isDisabled: false,
+  },
+  PRICE: {
+    type: 'price',
+    isChecked: false,
+    isDisabled: false,
+  },
+  OFFERS: {
+    type: 'offers',
+    isChecked: false,
+    isDisabled: true,
+  },
 };
 
 export {INPUT_DATE_FORMAT, BLANK_EVENT, FilterType, SortType};
