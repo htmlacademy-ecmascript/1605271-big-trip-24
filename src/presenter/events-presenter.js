@@ -17,7 +17,7 @@ export default class BoardPresenter {
   #offers = [];
 
   #eventPresenters = new Map();
-  #currentSortType = SortType.DAY;
+  #currentSortType = SortType.DAY.type;
   #sourcedEventItems = [];
 
   constructor({eventsContainer, eventsModel}) {
@@ -45,10 +45,10 @@ export default class BoardPresenter {
 
   #sortEvents(sortType) {
     switch (sortType) {
-      case SortType.TIME:
+      case SortType.TIME.type:
         this.#events.sort(sortTime);
         break;
-      case SortType.PRICE:
+      case SortType.PRICE.type:
         this.#events.sort(sortPrice);
         break;
       default:
