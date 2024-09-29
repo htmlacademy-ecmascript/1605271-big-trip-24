@@ -26,7 +26,7 @@ export default class BoardPresenter {
   }
 
   init() {
-    this.#events = [...this.#eventsModel.events];
+    this.#sourcedEventItems = this.#events = [...this.#eventsModel.events];
     this.#destinations = [...this.#eventsModel.destinations];
     this.#offers = [...this.#eventsModel.offers];
     this.#sourcedEventItems = [...this.#eventsModel.events];

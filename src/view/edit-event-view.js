@@ -1,6 +1,6 @@
-import AbstractView from '../framework/view/abstract-view.js';
+import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import {INPUT_DATE_FORMAT, BLANK_EVENT} from '../const.js';
-import { capitalizeFirstLetter, humanizeEventDueDate, getOffersByType, getDestinationById } from '../utils/event.js';
+import { capitalizeFirstLetter, humanizeEventDueDate, getOffersByType, getDestinationById, getDestinationByName } from '../utils/event.js';
 
 function createEventTypesTemplate(allOffers, eventType) {
   const eventTypes = allOffers.map((offer) => offer.type);
@@ -107,12 +107,14 @@ function createOptionsTemplate(destinations) {
   );
 }
 
-function createEditEventTemplate(event, destination, offersByType, allDestinations, allOffers, isCreate) {
-  const {type, offers, basePrice, dateFrom, dateTo} = event;
+function createEditEventTemplate(event, allDestinations, allOffers, isCreate) {
+  const {type, destination, offers, basePrice, dateFrom, dateTo} = event;
 
+  const fullDestination = (isCreate) ? BLANK_EVENT.destination : getDestinationById(allDestinations, destination);
+  const offersByType = getOffersByType(allOffers, type);
   const typesTemplate = createEventTypesTemplate(allOffers, type);
   const offersTemplate = createOffersTemplate(offersByType, offers);
-  const destinationTemplate = createDestinationTemplate(destination);
+  const destinationTemplate = createDestinationTemplate(fullDestination);
   const optionsTemplate = createOptionsTemplate(allDestinations);
 
   return (
@@ -138,7 +140,7 @@ function createEditEventTemplate(event, destination, offersByType, allDestinatio
             <label class="event__label  event__type-output" for="event-destination-1">
             ${type}
             </label>
-            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.name}" list="destination-list-1">
+            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${fullDestination.name}" list="destination-list-1">
             <datalist id="destination-list-1">
               ${optionsTemplate}
             </datalist>
@@ -183,10 +185,7 @@ function createEditEventTemplate(event, destination, offersByType, allDestinatio
   );
 }
 
-export default class EditEventView extends AbstractView {
-  #event = null;
-  #destination = null;
-  #offersByType = [];
+export default class EditEventView extends AbstractStatefulView {
   #allDestinations = [];
   #allOffers = [];
   #isCreate = false;
@@ -195,21 +194,32 @@ export default class EditEventView extends AbstractView {
 
   constructor({event, allDestinations, allOffers, onCloseFormClick, onFormSubmit}) {
     super();
-    this.#event = event;
+    this._setState(EditEventView.parseEventToState(event));
     this.#allDestinations = allDestinations;
     this.#allOffers = allOffers;
-    this.#isCreate = !this.#event.id;
-    this.#destination = (this.#isCreate) ? BLANK_EVENT.destination : getDestinationById(this.#allDestinations, this.#event.destination);
-    this.#offersByType = getOffersByType(this.#allOffers, this.#event.type);
+    this.#isCreate = !this._state.id;
+
     this.#handleCloseFormClick = onCloseFormClick;
     this.#handleFormSubmit = onFormSubmit;
 
-    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#editClickHandler);
-    this.element.querySelector('form').addEventListener('submit', this.#formSubmitHandler);
+    this._restoreHandlers();
   }
 
   get template() {
-    return createEditEventTemplate(this.#event, this.#destination, this.#offersByType, this.#allDestinations, this.#allOffers, this.#isCreate);
+    return createEditEventTemplate(this._state, this.#allDestinations, this.#allOffers, this.#isCreate);
+  }
+
+  reset(event) {
+    this.updateElement(
+      EditEventView.parseEventToState(event),
+    );
+  }
+
+  _restoreHandlers() {
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#editClickHandler);
+    this.element.querySelector('form').addEventListener('submit', this.#formSubmitHandler);
+    this.element.querySelector('.event__input--destination').addEventListener('input', this.#destinationInputHandler);
+    this.element.querySelector('.event__type-group').addEventListener('change', this.#typeChangeHandler);
   }
 
   #editClickHandler = (evt) => {
@@ -219,6 +229,34 @@ export default class EditEventView extends AbstractView {
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
-    this.#handleFormSubmit(this.#event);
+    this.#handleFormSubmit(EditEventView.parseStateToEvent(this._state));
   };
+
+  #destinationInputHandler = (evt) => {
+    evt.preventDefault();
+    const destinationByName = getDestinationByName(this.#allDestinations, evt.target.value);
+
+    if (destinationByName) {
+      this.updateElement({
+        destination: destinationByName.id,
+      });
+    }
+  };
+
+  #typeChangeHandler = (evt) => {
+    evt.preventDefault();
+    this.updateElement({
+      type: evt.target.value,
+    });
+  };
+
+  static parseEventToState(event) {
+    return {...event};
+  }
+
+  static parseStateToEvent(state) {
+    const event = {...state};
+
+    return event;
+  }
 }
