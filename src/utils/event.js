@@ -47,6 +47,10 @@ function getDestinationById(destinations, id) {
   return destinations.find((destination) => destination.id === id);
 }
 
+function getDestinationByName(destinations, name) {
+  return destinations.find((destination) => destination.name === name);
+}
+
 function isPointFuture(startDate) {
   const now = dayjs();
   return dayjs(startDate).isAfter(now);
@@ -100,4 +104,4 @@ function sortPrice(eventA, eventB) {
   return weight ?? priceB - priceA;
 }
 
-export {humanizeEventDueDate, capitalizeFirstLetter, formatDateDifference, getOffersByType, getDestinationById, isPointFuture, isPointPresent, isPointPast, updateEvent, sortTime, sortPrice};
+export {humanizeEventDueDate, capitalizeFirstLetter, formatDateDifference, getOffersByType, getDestinationById, getDestinationByName, isPointFuture, isPointPresent, isPointPast, updateEvent, sortTime, sortPrice};
