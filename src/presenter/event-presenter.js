@@ -46,7 +46,7 @@ export default class EventPresenter {
       event: this.#event,
       allDestinations: this.#destinations,
       allOffers: this.#offers,
-      onCloseFormClick: () => (this.#eventEditComponent.reset(this.#event), this.#replaceFormToEvent()),
+      onCloseFormClick: () => (this.#resetForm(), this.#replaceFormToEvent()),
       onFormSubmit: this.#handleFormSubmit
     });
 
@@ -74,9 +74,13 @@ export default class EventPresenter {
 
   resetView() {
     if (this.#mode !== Mode.DEFAULT) {
-      this.#eventEditComponent.reset(this.#event);
+      this.#resetForm();
       this.#replaceFormToEvent();
     }
+  }
+
+  #resetForm() {
+    this.#eventEditComponent.reset(this.#event);
   }
 
   #replaceEventToForm() {
@@ -95,7 +99,7 @@ export default class EventPresenter {
   #escKeyDownHandler = (evt) => {
     if (evt.key === 'Escape') {
       evt.preventDefault();
-      this.#eventEditComponent.reset(this.#event);
+      this.#resetForm();
       this.#replaceFormToEvent();
     }
   };
