@@ -47,11 +47,11 @@ export default class NewEventPresenter {
     document.removeEventListener('keydown', this.#escKeyDownHandler);
   }
 
-  #handleFormSubmit = (task) => {
+  #handleFormSubmit = (event) => {
     this.#handleDataChange(
-      UserAction.ADD_TASK,
+      UserAction.ADD_EVENT,
       UpdateType.MINOR,
-      {id: Math.floor(Math.random() * (100 - 5 + 1) + 2), ...task},
+      {id: Math.floor(Math.random() * (100 - 5 + 1) + 2), ...event},
     );
     this.destroy();
   };
