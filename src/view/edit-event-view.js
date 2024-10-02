@@ -193,11 +193,12 @@ export default class EditEventView extends AbstractStatefulView {
   #allOffers = [];
   #isCreate = false;
   #handleCloseFormClick = null;
+  #handleDeleteClick = null;
   #handleFormSubmit = null;
   #fromDatepicker = null;
   #toDatepicker = null;
 
-  constructor({event, allDestinations, allOffers, onCloseFormClick, onFormSubmit}) {
+  constructor({event, allDestinations, allOffers, onCloseFormClick, onDeleteClick, onFormSubmit}) {
     super();
     this._setState(EditEventView.parseEventToState(event));
     this.#allDestinations = allDestinations;
@@ -205,6 +206,7 @@ export default class EditEventView extends AbstractStatefulView {
     this.#isCreate = !this._state.id;
 
     this.#handleCloseFormClick = onCloseFormClick;
+    this.#handleDeleteClick = onDeleteClick;
     this.#handleFormSubmit = onFormSubmit;
 
     this._restoreHandlers();
@@ -235,7 +237,10 @@ export default class EditEventView extends AbstractStatefulView {
   }
 
   _restoreHandlers() {
-    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#editClickHandler);
+    if (this.element.querySelector('.event__rollup-btn')) {
+      this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#editClickHandler);
+    }
+    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#deleteClickHandler);
     this.element.querySelector('form').addEventListener('submit', this.#formSubmitHandler);
     this.element.querySelector('.event__input--destination').addEventListener('input', this.#destinationInputHandler);
     this.element.querySelector('.event__type-group').addEventListener('change', this.#typeChangeHandler);
@@ -246,6 +251,11 @@ export default class EditEventView extends AbstractStatefulView {
   #editClickHandler = (evt) => {
     evt.preventDefault();
     this.#handleCloseFormClick(evt);
+  };
+
+  #deleteClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleDeleteClick(EditEventView.parseStateToEvent(this._state));
   };
 
   #formSubmitHandler = (evt) => {

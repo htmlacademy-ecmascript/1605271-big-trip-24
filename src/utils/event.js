@@ -66,10 +66,6 @@ function isPointPast(endDate) {
   return dayjs(endDate).isBefore(now);
 }
 
-function updateEvent(events, update) {
-  return events.map((event) => event.id === update.id ? update : event);
-}
-
 function getWeightForNullValue(valueA, valueB) {
   if (valueA === null && valueB === null) {
     return 0;
@@ -104,4 +100,4 @@ function sortPrice(eventA, eventB) {
   return weight ?? priceB - priceA;
 }
 
-export {humanizeEventDueDate, capitalizeFirstLetter, formatDateDifference, getOffersByType, getDestinationById, getDestinationByName, isPointFuture, isPointPresent, isPointPast, updateEvent, sortTime, sortPrice};
+export {humanizeEventDueDate, capitalizeFirstLetter, formatDateDifference, getOffersByType, getDestinationById, getDestinationByName, isPointFuture, isPointPresent, isPointPast, sortTime, sortPrice};
