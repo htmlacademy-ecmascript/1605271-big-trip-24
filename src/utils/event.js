@@ -100,4 +100,9 @@ function sortPrice(eventA, eventB) {
   return weight ?? priceB - priceA;
 }
 
-export {humanizeEventDueDate, capitalizeFirstLetter, formatDateDifference, getOffersByType, getDestinationById, getDestinationByName, isPointFuture, isPointPresent, isPointPast, sortTime, sortPrice};
+function extractEventOfferId(input) {
+  const match = input.match(/event-offer-(.*?)-1/);
+  return match ? match[1] : null;
+}
+
+export {humanizeEventDueDate, capitalizeFirstLetter, formatDateDifference, getOffersByType, getDestinationById, getDestinationByName, isPointFuture, isPointPresent, isPointPast, sortTime, sortPrice, extractEventOfferId};

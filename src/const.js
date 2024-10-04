@@ -1,9 +1,7 @@
 const INPUT_DATE_FORMAT = 'DD/MM/YY HH:mm';
 const BLANK_EVENT = {
   type: 'flight',
-  destination: {
-    name: '',
-  },
+  destination: null,
   dateFrom: '',
   dateTo: '',
   basePrice: 0,

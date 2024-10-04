@@ -6,7 +6,7 @@ const mockEvents = [
     dateFrom: '2024-06-15T15:00:00.000Z',
     dateTo: '2024-06-15T18:00:00.000Z',
     basePrice: 1000,
-    offers: [1, 2],
+    offers: ['1', '2'],
     isFavorite: true,
   },
   {
@@ -16,7 +16,7 @@ const mockEvents = [
     dateFrom: '2024-06-15T13:00:00.000Z',
     dateTo: '2024-06-15T17:00:00.000Z',
     basePrice: 500,
-    offers: [1],
+    offers: ['1'],
     isFavorite: false,
   },
 ];

@@ -1,6 +1,6 @@
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import {INPUT_DATE_FORMAT, BLANK_EVENT} from '../const.js';
-import { capitalizeFirstLetter, humanizeEventDueDate, getOffersByType, getDestinationById, getDestinationByName } from '../utils/event.js';
+import { capitalizeFirstLetter, humanizeEventDueDate, getOffersByType, getDestinationById, getDestinationByName, extractEventOfferId} from '../utils/event.js';
 import flatpickr from 'flatpickr';
 import he from 'he';
 
@@ -56,7 +56,7 @@ function createOffersTemplate(offersByType, eventOffers) {
             class="event__offer-checkbox visually-hidden"
             id="event-offer-${offer.id}-1"
             type="checkbox"
-            name="event-offer-${offer.id}"
+            name="event-offer-${offer.title.toLowerCase().replace(/\s+/g, '-')}"
             ${eventOffers.includes(offer.id) ? 'checked' : '' }
           >
           <label
@@ -76,7 +76,9 @@ function createOffersTemplate(offersByType, eventOffers) {
 }
 
 function createDestinationTemplate(destination) {
-  if (destination.name.length === 0) {
+  if (!destination) {
+    return '';
+  } else if (destination.name.length === 0) {
     return '';
   }
 
@@ -114,7 +116,7 @@ function createOptionsTemplate(destinations) {
 function createEditEventTemplate(event, allDestinations, allOffers, isCreate) {
   const {type, destination, offers, basePrice, dateFrom, dateTo} = event;
 
-  const fullDestination = (isCreate) ? BLANK_EVENT.destination : getDestinationById(allDestinations, destination);
+  const fullDestination = (destination === null) ? BLANK_EVENT.destination : getDestinationById(allDestinations, destination);
   const offersByType = getOffersByType(allOffers, type);
   const typesTemplate = createEventTypesTemplate(allOffers, type);
   const offersTemplate = createOffersTemplate(offersByType, offers);
@@ -144,7 +146,7 @@ function createEditEventTemplate(event, allDestinations, allOffers, isCreate) {
             <label class="event__label  event__type-output" for="event-destination-1">
             ${type}
             </label>
-            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${he.encode(fullDestination.name)}" list="destination-list-1">
+            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${!fullDestination ? '' : he.encode(fullDestination.name)}" list="destination-list-1">
             <datalist id="destination-list-1">
               ${optionsTemplate}
             </datalist>
@@ -245,6 +247,7 @@ export default class EditEventView extends AbstractStatefulView {
     this.element.querySelector('form').addEventListener('submit', this.#formSubmitHandler);
     this.element.querySelector('.event__input--destination').addEventListener('input', this.#destinationInputHandler);
     this.element.querySelector('.event__type-group').addEventListener('change', this.#typeChangeHandler);
+    this.element.querySelector('.event__available-offers').addEventListener('change', this.#offersChangeHandler);
 
     this.#setDatepicker();
   }
@@ -291,6 +294,15 @@ export default class EditEventView extends AbstractStatefulView {
     evt.preventDefault();
     this.updateElement({
       type: evt.target.value,
+    });
+  };
+
+  #offersChangeHandler = (evt) => {
+    evt.preventDefault();
+    const offers = Array.from(this.element.querySelectorAll('.event__offer-checkbox'));
+    const enabledOfferIds = offers.filter((offer) => offer.checked).map((offer) => extractEventOfferId(offer.id));
+    this._setState({
+      offers: enabledOfferIds,
     });
   };
 
