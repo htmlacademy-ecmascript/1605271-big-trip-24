@@ -1,6 +1,7 @@
 import {render, replace, remove} from '../framework/render.js';
 import EditEventView from '../view/edit-event-view.js';
 import EventsItemView from '../view/events-item-view.js';
+import {UserAction, UpdateType} from '../const.js';
 
 const Mode = {
   DEFAULT: 'DEFAULT',
@@ -47,6 +48,7 @@ export default class EventPresenter {
       allDestinations: this.#destinations,
       allOffers: this.#offers,
       onCloseFormClick: () => (this.#resetForm(), this.#replaceFormToEvent()),
+      onDeleteClick: this.#handleDeleteClick,
       onFormSubmit: this.#handleFormSubmit
     });
 
@@ -105,11 +107,27 @@ export default class EventPresenter {
   };
 
   #handleFormSubmit = (event) => {
-    this.#handleDataChange(event);
+    this.#handleDataChange(
+      UserAction.UPDATE_EVENT,
+      UpdateType.MINOR,
+      event,
+    );
     this.#replaceFormToEvent();
   };
 
+  #handleDeleteClick = (event) => {
+    this.#handleDataChange(
+      UserAction.DELETE_EVENT,
+      UpdateType.MINOR,
+      event,
+    );
+  };
+
   #handleFavoriteClick = () => {
-    this.#handleDataChange({...this.#event, isFavorite: !this.#event.isFavorite});
+    this.#handleDataChange(
+      UserAction.UPDATE_EVENT,
+      UpdateType.MINOR,
+      {...this.#event, isFavorite: !this.#event.isFavorite}
+    );
   };
 }

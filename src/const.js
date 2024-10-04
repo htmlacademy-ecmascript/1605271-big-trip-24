@@ -1,9 +1,7 @@
 const INPUT_DATE_FORMAT = 'DD/MM/YY HH:mm';
 const BLANK_EVENT = {
   type: 'flight',
-  destination: {
-    name: '',
-  },
+  destination: null,
   dateFrom: '',
   dateTo: '',
   basePrice: 0,
@@ -38,5 +36,15 @@ const SortType = {
     isDisabled: true,
   },
 };
+const UserAction = {
+  UPDATE_EVENT: 'UPDATE_EVENT',
+  ADD_EVENT: 'ADD_EVENT',
+  DELETE_EVENT: 'DELETE_EVENT',
+};
+const UpdateType = {
+  PATCH: 'PATCH',
+  MINOR: 'MINOR',
+  MAJOR: 'MAJOR',
+};
 
-export {INPUT_DATE_FORMAT, BLANK_EVENT, FilterType, SortType};
+export {INPUT_DATE_FORMAT, BLANK_EVENT, FilterType, SortType, UserAction, UpdateType};

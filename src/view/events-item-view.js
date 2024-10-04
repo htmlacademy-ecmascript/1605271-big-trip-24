@@ -1,5 +1,6 @@
 import AbstractView from '../framework/view/abstract-view.js';
 import { humanizeEventDueDate, capitalizeFirstLetter, formatDateDifference, getOffersByType, getDestinationById } from '../utils/event.js';
+import he from 'he';
 
 function createEventsItemTemplate(event, destination, offersByType) {
   const {type, dateFrom, dateTo, basePrice, isFavorite} = event;
@@ -12,12 +13,12 @@ function createEventsItemTemplate(event, destination, offersByType) {
         <div class="event__type">
           <img class="event__type-icon" width="42" height="42" src="img/icons/${type}.png" alt="Event type icon">
         </div>
-        <h3 class="event__title">${capitalizeFirstLetter(type)} ${destination.name}</h3>
+        <h3 class="event__title">${capitalizeFirstLetter(type)} ${he.encode(destination.name)}</h3>
         <div class="event__schedule">
           <p class="event__time">
-            <time class="event__start-time" datetime="${dateFrom}">${humanizeEventDueDate(dateFrom, 'HH:mm')}</time>
+            <time class="event__start-time" datetime="${dateFrom}">${he.encode(humanizeEventDueDate(dateFrom, 'HH:mm'))}</time>
             &mdash;
-            <time class="event__end-time" datetime="${dateTo}">${humanizeEventDueDate(dateTo, 'HH:mm')}</time>
+            <time class="event__end-time" datetime="${dateTo}">${he.encode(humanizeEventDueDate(dateTo, 'HH:mm'))}</time>
           </p>
           <p class="event__duration">${formatDateDifference(dateFrom, dateTo)}</p>
         </div>
