@@ -78,7 +78,8 @@ function createOffersTemplate(offersByType, eventOffers) {
 function createDestinationTemplate(destination) {
   if (!destination) {
     return '';
-  } else if (destination.name.length === 0) {
+  }
+  if (destination.name.length === 0) {
     return '';
   }
 
@@ -240,14 +241,19 @@ export default class EditEventView extends AbstractStatefulView {
   }
 
   _restoreHandlers() {
-    if (this.element.querySelector('.event__rollup-btn')) {
-      this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#editClickHandler);
+    const toggleButton = this.element.querySelector('.event__rollup-btn');
+    const availableOffers = this.element.querySelector('.event__available-offers');
+
+    if (toggleButton) {
+      toggleButton.addEventListener('click', this.#editClickHandler);
     }
     this.element.querySelector('.event__reset-btn').addEventListener('click', this.#deleteClickHandler);
     this.element.querySelector('form').addEventListener('submit', this.#formSubmitHandler);
     this.element.querySelector('.event__input--destination').addEventListener('input', this.#destinationInputHandler);
     this.element.querySelector('.event__type-group').addEventListener('change', this.#typeChangeHandler);
-    this.element.querySelector('.event__available-offers').addEventListener('change', this.#offersChangeHandler);
+    if (availableOffers) {
+      availableOffers.addEventListener('change', this.#offersChangeHandler);
+    }
 
     this.#setDatepicker();
   }
@@ -299,12 +305,23 @@ export default class EditEventView extends AbstractStatefulView {
 
   #offersChangeHandler = (evt) => {
     evt.preventDefault();
-    const offers = Array.from(this.element.querySelectorAll('.event__offer-checkbox'));
-    const enabledOfferIds = offers.filter((offer) => offer.checked).map((offer) => extractEventOfferId(offer.id));
+
+    const offerId = extractEventOfferId(evt.target.id);
+    const offers = this._state.offers;
+
+    let updatedOffers;
+
+    if (offers.includes(offerId)) {
+      updatedOffers = offers.filter((id) => id !== offerId);
+    } else {
+      updatedOffers = [...offers, offerId];
+    }
+
     this._setState({
-      offers: enabledOfferIds,
+      offers: updatedOffers,
     });
   };
+
 
   #setDatepicker() {
     this.#fromDatepicker = flatpickr(
@@ -338,8 +355,6 @@ export default class EditEventView extends AbstractStatefulView {
   }
 
   static parseStateToEvent(state) {
-    const event = {...state};
-
-    return event;
+    return {...state};
   }
 }

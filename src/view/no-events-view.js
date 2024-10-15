@@ -10,9 +10,7 @@ const NoEventsTextType = {
 
 
 function createNoEventsTemplate(filterType) {
-  const noEventsTextValue = NoEventsTextType[filterType];
-
-  return `<p class="trip-events__msg">${noEventsTextValue}</p>`;
+  return `<p class="trip-events__msg">${NoEventsTextType[filterType]}</p>`;
 }
 
 export default class NoEventsView extends AbstractView {

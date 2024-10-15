@@ -7,19 +7,23 @@ import {sortPrice, sortTime} from '../utils/event.js';
 import {SortType, UpdateType, UserAction, FilterType} from '../const.js';
 import {filtersVariants} from '../utils/filters.js';
 import NewEventPresenter from './new-event-presenter.js';
+import LoadingView from '../view/loading-view.js';
 
 export default class EventsPresenter {
-  #sortComponent = null;
-  #noEventsComponent = null;
-  #eventsListComponent = new EventsListView();
   #eventsContainer = null;
   #eventsModel = null;
   #filtersModel = null;
+
+  #sortComponent = null;
+  #noEventsComponent = null;
+  #eventsListComponent = new EventsListView();
+  #loadingComponent = new LoadingView();
 
   #newEventPresenter = null;
   #eventPresenters = new Map();
   #currentSortType = SortType.DAY.type;
   #filterType = FilterType.EVERYTHING;
+  #isLoading = true;
 
   constructor({eventsContainer, eventsModel, filtersModel, onNewEventDestroy}) {
     this.#eventsContainer = eventsContainer;
@@ -64,7 +68,7 @@ export default class EventsPresenter {
   }
 
   createEvent() {
-    this.#currentSortType = SortType.DEFAULT;
+    this.#currentSortType = SortType.DAY;
     this.#filtersModel.setFilters(UpdateType.MAJOR, FilterType.EVERYTHING);
     this.#newEventPresenter.init(this.destinations, this.offers);
   }
@@ -101,6 +105,11 @@ export default class EventsPresenter {
         this.#clearEvents({resetSortType: true});
         this.#renderEvents();
         break;
+      case UpdateType.INIT:
+        this.#isLoading = false;
+        remove(this.#loadingComponent);
+        this.#renderEvents();
+        break;
     }
   };
 
@@ -127,6 +136,10 @@ export default class EventsPresenter {
     });
 
     render(this.#sortComponent, this.#eventsContainer);
+  }
+
+  #renderLoading() {
+    render(this.#loadingComponent, this.#eventsContainer);
   }
 
   #clearNoEvents() {
@@ -157,20 +170,24 @@ export default class EventsPresenter {
     this.#eventPresenters.clear();
 
     remove(this.#sortComponent);
+    remove(this.#loadingComponent);
 
     if (this.#noEventsComponent) {
       this.#clearNoEvents();
     }
 
     if (resetSortType) {
-      this.#currentSortType = SortType.DEFAULT;
+      this.#currentSortType = SortType.DAY;
     }
   }
 
   #renderEvents() {
-    const events = this.events;
+    if (this.#isLoading) {
+      this.#renderLoading();
+      return;
+    }
 
-    if (events.length === 0) {
+    if (this.events.length === 0) {
       this.#renderNoEvents();
       return;
     }
