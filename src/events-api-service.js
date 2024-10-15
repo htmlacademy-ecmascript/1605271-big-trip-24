@@ -3,27 +3,33 @@ import ApiService from './framework/api-service.js';
 const Method = {
   GET: 'GET',
   PUT: 'PUT',
+  POST: 'POST',
+  DELETE: 'DELETE',
 };
+
+const eventsUrl = 'points';
+const destinationsUrl = 'destinations';
+const offersUrl = 'offers';
 
 export default class EventsApiService extends ApiService {
   get events() {
-    return this._load({url: 'points'})
+    return this._load({url: eventsUrl})
       .then(ApiService.parseResponse);
   }
 
   get destinations() {
-    return this._load({url: 'destinations'})
+    return this._load({url: destinationsUrl})
       .then(ApiService.parseResponse);
   }
 
   get offers() {
-    return this._load({url: 'offers'})
+    return this._load({url: offersUrl})
       .then(ApiService.parseResponse);
   }
 
   async updateEvent(event) {
     const response = await this._load({
-      url: `points/${event.id}`,
+      url: `${eventsUrl}/${event.id}`,
       method: Method.PUT,
       body: JSON.stringify(this.#adaptToServer(event)),
       headers: new Headers({'Content-Type': 'application/json'}),
@@ -32,6 +38,28 @@ export default class EventsApiService extends ApiService {
     const parsedResponse = await ApiService.parseResponse(response);
 
     return parsedResponse;
+  }
+
+  async addEvent(event) {
+    const response = await this._load({
+      url: eventsUrl,
+      method: Method.POST,
+      body: JSON.stringify(this.#adaptToServer(event)),
+      headers: new Headers({'Content-Type': 'application/json'}),
+    });
+
+    const parsedResponse = await ApiService.parseResponse(response);
+
+    return parsedResponse;
+  }
+
+  async deleteEvent(event) {
+    const response = await this._load({
+      url: `${eventsUrl}/${event.id}`,
+      method: Method.DELETE,
+    });
+
+    return response;
   }
 
   #adaptToServer(event) {
