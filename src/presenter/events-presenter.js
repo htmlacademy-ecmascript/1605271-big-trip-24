@@ -54,9 +54,9 @@ export default class EventsPresenter {
 
     switch (this.#currentSortType) {
       case SortType.TIME.type:
-        return filteredEvents.sort(sortTime);
+        return filteredEvents.slice().sort(sortTime);
       case SortType.PRICE.type:
-        return filteredEvents.sort(sortPrice);
+        return filteredEvents.slice().sort(sortPrice);
       default:
         return filteredEvents;
     }

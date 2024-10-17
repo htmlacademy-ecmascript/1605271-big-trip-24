@@ -49,7 +49,7 @@ export default class EventsModel extends Observable {
     const index = this.#findEventIndex(update.id);
 
     if (index === -1) {
-      throw new Error('Cannot update a non-existing event');
+      throw new Error('Can\'t update a non-existing event');
     }
 
     try {
@@ -59,7 +59,7 @@ export default class EventsModel extends Observable {
       this.#events[index] = updatedEvent;
       this._notify(updateType, updatedEvent);
     } catch (err) {
-      throw new Error('Cannot update event');
+      throw new Error('Can\'t update event');
     }
   }
 
@@ -68,10 +68,12 @@ export default class EventsModel extends Observable {
       const response = await this.#eventsApiService.addEvent(update);
       const newEvent = this.#adaptToClient(response);
 
-      this.#events = [newEvent, ...this.#events];
+      this.#events = this.#events.map((event) =>
+        event.id === update.id ? newEvent : event
+      );
       this._notify(updateType, newEvent);
     } catch (err) {
-      throw new Error('Cannot add event');
+      throw new Error('Can\'t add event');
     }
   }
 
@@ -79,7 +81,7 @@ export default class EventsModel extends Observable {
     const index = this.#findEventIndex(update.id);
 
     if (index === -1) {
-      throw new Error('Cannot delete a non-existing event');
+      throw new Error('Can\'t delete a non-existing event');
     }
 
     try {
@@ -87,7 +89,7 @@ export default class EventsModel extends Observable {
       this.#events = this.#events.filter((event) => event.id !== update.id);
       this._notify(updateType);
     } catch (err) {
-      throw new Error('Cannot delete event');
+      throw new Error('Can\'t delete event');
     }
   }
 

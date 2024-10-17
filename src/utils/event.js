@@ -9,8 +9,8 @@ dayjs.extend(isSameOrBefore);
 
 const now = () => dayjs();
 
-const formatDate = (date, format) => (date ? dayjs(date).format(format) : '');
-const capitalize = (str) => str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : str;
+const humanizeEventDueDate = (date, format) => (date ? dayjs(date).format(format) : '');
+const capitalizeFirstLetter = (str) => str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : str;
 
 const calculateDuration = (start, end) => dayjs.duration(dayjs(end).diff(dayjs(start)));
 const formatDuration = ({days, hours, minutes}) => {
@@ -35,9 +35,9 @@ const getOffersByType = (offers, type) => findItemByField(offers, 'type', type)?
 const getDestinationById = (destinations, id) => findItemByField(destinations, 'id', id);
 const getDestinationByName = (destinations, name) => findItemByField(destinations, 'name', name);
 
-const isFutureEvent = (startDate) => dayjs(startDate).isAfter(now());
-const isPresentEvent = (startDate, endDate) => dayjs(startDate).isSameOrBefore(now()) && dayjs(endDate).isSameOrAfter(now());
-const isPastEvent = (endDate) => dayjs(endDate).isBefore(now());
+const isPointFuture = (startDate) => dayjs(startDate).isAfter(now());
+const isPointPresent = (startDate, endDate) => dayjs(startDate).isSameOrBefore(now()) && dayjs(endDate).isSameOrAfter(now());
+const isPointPast = (endDate) => dayjs(endDate).isBefore(now());
 
 const getNullValueWeight = (a, b) => {
   if (a === null && b === null) {
@@ -52,22 +52,22 @@ const getNullValueWeight = (a, b) => {
   return null;
 };
 
-const sortEventsByTime = (a, b) => getNullValueWeight(a.duration, b.duration) ?? calculateDuration(a.dateFrom, a.dateTo).asMilliseconds() - calculateDuration(b.dateFrom, b.dateTo).asMilliseconds();
-const sortEventsByPrice = (a, b) => getNullValueWeight(a.price, b.price) ?? b.basePrice - a.basePrice;
+const sortTime = (a, b) => getNullValueWeight(a.duration, b.duration) ?? calculateDuration(a.dateFrom, a.dateTo).asMilliseconds() - calculateDuration(b.dateFrom, b.dateTo).asMilliseconds();
+const sortPrice = (a, b) => getNullValueWeight(a.price, b.price) ?? b.basePrice - a.basePrice;
 
-const extractOfferId = (input) => input.match(/event-offer-(.*?)-1/)?.[1] || null;
+const extractEventOfferId = (input) => input.match(/event-offer-(.*?)-1/)?.[1] || null;
 
 export {
-  formatDate as humanizeEventDueDate,
-  capitalize as capitalizeFirstLetter,
+  humanizeEventDueDate,
+  capitalizeFirstLetter,
   formatDateDifference,
   getOffersByType,
   getDestinationById,
   getDestinationByName,
-  isFutureEvent as isPointFuture,
-  isPresentEvent as isPointPresent,
-  isPastEvent as isPointPast,
-  sortEventsByTime as sortTime,
-  sortEventsByPrice as sortPrice,
-  extractOfferId as extractEventOfferId
+  isPointFuture,
+  isPointPresent,
+  isPointPast,
+  sortTime,
+  sortPrice,
+  extractEventOfferId
 };
