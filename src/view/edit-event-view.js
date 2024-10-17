@@ -364,7 +364,8 @@ export default class EditEventView extends AbstractStatefulView {
   }
 
   static parseEventToState(event) {
-    return {...event,
+    return {
+      ...event,
       isDisabled: false,
       isSaving: false,
       isDeleting: false,
@@ -372,12 +373,12 @@ export default class EditEventView extends AbstractStatefulView {
   }
 
   static parseStateToEvent(state) {
-    const task = {...state};
+    const event = {...state};
 
-    delete task.isDisabled;
-    delete task.isSaving;
-    delete task.isDeleting;
+    delete event.isDisabled;
+    delete event.isSaving;
+    delete event.isDeleting;
 
-    return task;
+    return event;
   }
 }

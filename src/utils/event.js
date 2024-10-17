@@ -2,107 +2,72 @@ import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
+
 dayjs.extend(duration);
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
 
-function humanizeEventDueDate(dueDate, dateFormat) {
-  return dueDate ? dayjs(dueDate).format(dateFormat) : '';
-}
+const now = () => dayjs();
 
-function capitalizeFirstLetter(str) {
-  if (!str) {
-    return str;
-  }
+const formatDate = (date, format) => (date ? dayjs(date).format(format) : '');
+const capitalize = (str) => str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : str;
 
-  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-}
+const calculateDuration = (start, end) => dayjs.duration(dayjs(end).diff(dayjs(start)));
+const formatDuration = ({days, hours, minutes}) => {
+  const d = days ? `${String(days).padStart(2, '0')}D ` : '';
+  const h = hours || days ? `${String(hours).padStart(2, '0')}H ` : '';
+  const m = `${String(minutes).padStart(2, '0')}M`;
+  return (d + h + m).trim();
+};
 
 function formatDateDifference(startDate, endDate) {
-  const start = dayjs(startDate);
-  const end = dayjs(endDate);
-  const diff = end.diff(start);
-
-  const d = dayjs.duration(diff).days();
-  const h = dayjs.duration(diff).hours();
-  const m = dayjs.duration(diff).minutes();
-
-  let result = '';
-  if (d > 0) {
-    result += `${String(d).padStart(2, '0')}D `;
-  }
-  if (h > 0 || d > 0) {
-    result += `${String(h).padStart(2, '0')}H `;
-  }
-  result += `${String(m).padStart(2, '0')}M`;
-
-  return result.trim();
+  const calculatedDuration = calculateDuration(startDate, endDate);
+  return formatDuration({
+    days: calculatedDuration.days(),
+    hours: calculatedDuration.hours(),
+    minutes: calculatedDuration.minutes(),
+  });
 }
 
-function getOffersByType(offers, type) {
-  return offers.find((offer) => offer.type === type).offers;
-}
+const findItemByField = (items, field, value) => items.find((item) => item[field] === value);
 
-function getDestinationById(destinations, id) {
-  return destinations.find((destination) => destination.id === id);
-}
+const getOffersByType = (offers, type) => findItemByField(offers, 'type', type)?.offers || [];
+const getDestinationById = (destinations, id) => findItemByField(destinations, 'id', id);
+const getDestinationByName = (destinations, name) => findItemByField(destinations, 'name', name);
 
-function getDestinationByName(destinations, name) {
-  return destinations.find((destination) => destination.name === name);
-}
+const isFutureEvent = (startDate) => dayjs(startDate).isAfter(now());
+const isPresentEvent = (startDate, endDate) => dayjs(startDate).isSameOrBefore(now()) && dayjs(endDate).isSameOrAfter(now());
+const isPastEvent = (endDate) => dayjs(endDate).isBefore(now());
 
-function isPointFuture(startDate) {
-  const now = dayjs();
-  return dayjs(startDate).isAfter(now);
-}
-
-function isPointPresent(startDate, endDate) {
-  const now = dayjs();
-  return dayjs(startDate).isSameOrBefore(now) && dayjs(endDate).isSameOrAfter(now);
-}
-
-function isPointPast(endDate) {
-  const now = dayjs();
-  return dayjs(endDate).isBefore(now);
-}
-
-function getWeightForNullValue(valueA, valueB) {
-  if (valueA === null && valueB === null) {
+const getNullValueWeight = (a, b) => {
+  if (a === null && b === null) {
     return 0;
   }
-
-  if (valueA === null) {
+  if (a === null) {
     return 1;
   }
-
-  if (valueB === null) {
+  if (b === null) {
     return -1;
   }
-
   return null;
-}
+};
 
-function sortTime(eventA, eventB) {
-  const durationA = dayjs(eventA.dateTo).diff(dayjs(eventA.dateFrom));
-  const durationB = dayjs(eventB.dateTo).diff(dayjs(eventB.dateFrom));
+const sortEventsByTime = (a, b) => getNullValueWeight(a.duration, b.duration) ?? calculateDuration(a.dateFrom, a.dateTo).asMilliseconds() - calculateDuration(b.dateFrom, b.dateTo).asMilliseconds();
+const sortEventsByPrice = (a, b) => getNullValueWeight(a.price, b.price) ?? b.basePrice - a.basePrice;
 
-  const weight = getWeightForNullValue(eventA.duration, eventB.duration);
+const extractOfferId = (input) => input.match(/event-offer-(.*?)-1/)?.[1] || null;
 
-  return weight ?? durationB - durationA;
-}
-
-function sortPrice(eventA, eventB) {
-  const priceA = eventA.basePrice;
-  const priceB = eventB.basePrice;
-
-  const weight = getWeightForNullValue(eventA.price, eventB.price);
-
-  return weight ?? priceB - priceA;
-}
-
-function extractEventOfferId(input) {
-  const match = input.match(/event-offer-(.*?)-1/);
-  return match ? match[1] : null;
-}
-
-export {humanizeEventDueDate, capitalizeFirstLetter, formatDateDifference, getOffersByType, getDestinationById, getDestinationByName, isPointFuture, isPointPresent, isPointPast, sortTime, sortPrice, extractEventOfferId};
+export {
+  formatDate as humanizeEventDueDate,
+  capitalize as capitalizeFirstLetter,
+  formatDateDifference,
+  getOffersByType,
+  getDestinationById,
+  getDestinationByName,
+  isFutureEvent as isPointFuture,
+  isPresentEvent as isPointPresent,
+  isPastEvent as isPointPast,
+  sortEventsByTime as sortTime,
+  sortEventsByPrice as sortPrice,
+  extractOfferId as extractEventOfferId
+};

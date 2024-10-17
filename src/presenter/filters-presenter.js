@@ -25,7 +25,11 @@ export default class FilterPresenter {
   }
 
   init() {
-    const prevFilterComponent = this.#filtersComponent;
+    this.#renderFilters();
+  }
+
+  #renderFilters() {
+    const prevFiltersComponent = this.#filtersComponent;
 
     this.#filtersComponent = new FiltersView({
       filters: this.filters,
@@ -33,24 +37,21 @@ export default class FilterPresenter {
       onFilterTypeChange: this.#handleFilterTypeChange
     });
 
-    if (prevFilterComponent === null) {
+    if (prevFiltersComponent === null) {
       render(this.#filtersComponent, this.#filtersContainer);
-      return;
+    } else {
+      replace(this.#filtersComponent, prevFiltersComponent);
+      remove(prevFiltersComponent);
     }
-
-    replace(this.#filtersComponent, prevFilterComponent);
-    remove(prevFilterComponent);
   }
 
   #handleModelEvent = () => {
-    this.init();
+    this.#renderFilters();
   };
 
   #handleFilterTypeChange = (filterType) => {
-    if (this.#filtersModel.filters === filterType) {
-      return;
+    if (this.#filtersModel.filters !== filterType) {
+      this.#filtersModel.setFilters(UpdateType.MAJOR, filterType);
     }
-
-    this.#filtersModel.setFilters(UpdateType.MAJOR, filterType);
   };
 }

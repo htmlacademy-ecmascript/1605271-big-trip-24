@@ -7,74 +7,65 @@ const Method = {
   DELETE: 'DELETE',
 };
 
-const eventsUrl = 'points';
-const destinationsUrl = 'destinations';
-const offersUrl = 'offers';
+const Endpoints = {
+  EVENTS: 'points',
+  DESTINATIONS: 'destinations',
+  OFFERS: 'offers',
+};
 
 export default class EventsApiService extends ApiService {
   get events() {
-    return this._load({url: eventsUrl})
-      .then(ApiService.parseResponse);
+    return this._fetchData(Endpoints.EVENTS);
   }
 
   get destinations() {
-    return this._load({url: destinationsUrl})
-      .then(ApiService.parseResponse);
+    return this._fetchData(Endpoints.DESTINATIONS);
   }
 
   get offers() {
-    return this._load({url: offersUrl})
-      .then(ApiService.parseResponse);
+    return this._fetchData(Endpoints.OFFERS);
   }
 
   async updateEvent(event) {
-    const response = await this._load({
-      url: `${eventsUrl}/${event.id}`,
-      method: Method.PUT,
-      body: JSON.stringify(this.#adaptToServer(event)),
-      headers: new Headers({'Content-Type': 'application/json'}),
-    });
-
-    const parsedResponse = await ApiService.parseResponse(response);
-
-    return parsedResponse;
+    return this._sendData(`${Endpoints.EVENTS}/${event.id}`, Method.PUT, event);
   }
 
   async addEvent(event) {
-    const response = await this._load({
-      url: eventsUrl,
-      method: Method.POST,
-      body: JSON.stringify(this.#adaptToServer(event)),
-      headers: new Headers({'Content-Type': 'application/json'}),
-    });
-
-    const parsedResponse = await ApiService.parseResponse(response);
-
-    return parsedResponse;
+    return this._sendData(Endpoints.EVENTS, Method.POST, event);
   }
 
   async deleteEvent(event) {
-    const response = await this._load({
-      url: `${eventsUrl}/${event.id}`,
+    return this._load({
+      url: `${Endpoints.EVENTS}/${event.id}`,
       method: Method.DELETE,
     });
+  }
 
-    return response;
+  _fetchData(url) {
+    return this._load({ url })
+      .then(ApiService.parseResponse);
+  }
+
+  async _sendData(url, method, event) {
+    const response = await this._load({
+      url,
+      method,
+      body: JSON.stringify(this.#adaptToServer(event)),
+      headers: new Headers({ 'Content-Type': 'application/json' }),
+    });
+
+    return ApiService.parseResponse(response);
   }
 
   #adaptToServer(event) {
-    const adaptedEvent = {...event,
-      'base_price': event.basePrice,
-      'date_from': event.dateFrom instanceof Date ? event.dateFrom.toISOString() : null,
-      'date_to': event.dateTo instanceof Date ? event.dateTo.toISOString() : null,
-      'is_favorite': event.isFavorite,
+    const { basePrice, dateFrom, dateTo, isFavorite, ...rest } = event;
+
+    return {
+      ...rest,
+      'base_price': basePrice,
+      'date_from': dateFrom instanceof Date ? dateFrom.toISOString() : null,
+      'date_to': dateTo instanceof Date ? dateTo.toISOString() : null,
+      'is_favorite': isFavorite,
     };
-
-    delete adaptedEvent.basePrice;
-    delete adaptedEvent.dateFrom;
-    delete adaptedEvent.dateTo;
-    delete adaptedEvent.isFavorite;
-
-    return adaptedEvent;
   }
 }

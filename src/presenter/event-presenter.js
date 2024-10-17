@@ -35,39 +35,16 @@ export default class EventPresenter {
     const prevEventComponent = this.#eventComponent;
     const prevEventEditComponent = this.#eventEditComponent;
 
-    this.#eventComponent = new EventsItemView({
-      event: this.#event,
-      allDestinations: this.#destinations,
-      allOffers: this.#offers,
-      onOpenFormClick: () => this.#replaceEventToForm(),
-      onFavoriteClick: this.#handleFavoriteClick
-    });
-
-    this.#eventEditComponent = new EditEventView({
-      event: this.#event,
-      allDestinations: this.#destinations,
-      allOffers: this.#offers,
-      onCloseFormClick: () => (this.#resetForm(), this.#replaceFormToEvent()),
-      onDeleteClick: this.#handleDeleteClick,
-      onFormSubmit: this.#handleFormSubmit
-    });
+    this.#eventComponent = this.#createEventComponent();
+    this.#eventEditComponent = this.#createEventEditComponent();
 
     if (prevEventComponent === null || prevEventEditComponent === null) {
       render(this.#eventComponent, this.#eventsListComponent.element);
       return;
     }
 
-    if (this.#mode === Mode.DEFAULT) {
-      replace(this.#eventComponent, prevEventComponent);
-    }
-
-    if (this.#mode === Mode.EDITING) {
-      replace(this.#eventEditComponent, prevEventEditComponent);
-      this.#mode = Mode.DEFAULT;
-    }
-
-    remove(prevEventComponent);
-    remove(prevEventEditComponent);
+    this.#replaceComponents(prevEventComponent, prevEventEditComponent);
+    this.#removePreviousComponents(prevEventComponent, prevEventEditComponent);
   }
 
   destroy() {
@@ -80,10 +57,6 @@ export default class EventPresenter {
       this.#resetForm();
       this.#replaceFormToEvent();
     }
-  }
-
-  #resetForm() {
-    this.#eventEditComponent.reset(this.#event);
   }
 
   setSaving() {
@@ -105,11 +78,6 @@ export default class EventPresenter {
   }
 
   setAborting() {
-    if (this.#mode === Mode.DEFAULT) {
-      this.#eventComponent.shake();
-      return;
-    }
-
     const resetFormState = () => {
       this.#eventEditComponent.updateElement({
         isDisabled: false,
@@ -118,15 +86,63 @@ export default class EventPresenter {
       });
     };
 
-    this.#eventEditComponent.shake(resetFormState);
+    if (this.#mode === Mode.DEFAULT) {
+      this.#eventComponent.shake();
+    } else {
+      this.#eventEditComponent.shake(resetFormState);
+    }
   }
 
-  #replaceEventToForm() {
+  #createEventComponent() {
+    return new EventsItemView({
+      event: this.#event,
+      allDestinations: this.#destinations,
+      allOffers: this.#offers,
+      onOpenFormClick: this.#replaceEventToForm,
+      onFavoriteClick: this.#handleFavoriteClick,
+    });
+  }
+
+  #createEventEditComponent() {
+    return new EditEventView({
+      event: this.#event,
+      allDestinations: this.#destinations,
+      allOffers: this.#offers,
+      onCloseFormClick: () => {
+        this.#resetForm();
+        this.#replaceFormToEvent();
+      },
+      onDeleteClick: this.#handleDeleteClick,
+      onFormSubmit: this.#handleFormSubmit,
+    });
+  }
+
+  #replaceComponents(prevEventComponent, prevEventEditComponent) {
+    if (this.#mode === Mode.DEFAULT) {
+      replace(this.#eventComponent, prevEventComponent);
+    }
+
+    if (this.#mode === Mode.EDITING) {
+      replace(this.#eventEditComponent, prevEventEditComponent);
+      this.#mode = Mode.DEFAULT;
+    }
+  }
+
+  #removePreviousComponents(prevEventComponent, prevEventEditComponent) {
+    remove(prevEventComponent);
+    remove(prevEventEditComponent);
+  }
+
+  #resetForm() {
+    this.#eventEditComponent.reset(this.#event);
+  }
+
+  #replaceEventToForm = () => {
     replace(this.#eventEditComponent, this.#eventComponent);
     document.addEventListener('keydown', this.#escKeyDownHandler);
     this.#handleModeChange();
     this.#mode = Mode.EDITING;
-  }
+  };
 
   #replaceFormToEvent() {
     replace(this.#eventComponent, this.#eventEditComponent);
@@ -146,7 +162,7 @@ export default class EventPresenter {
     this.#handleDataChange(
       UserAction.UPDATE_EVENT,
       UpdateType.MINOR,
-      event,
+      event
     );
   };
 
@@ -154,7 +170,7 @@ export default class EventPresenter {
     this.#handleDataChange(
       UserAction.DELETE_EVENT,
       UpdateType.MINOR,
-      event,
+      event
     );
   };
 

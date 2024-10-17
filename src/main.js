@@ -20,16 +20,17 @@ const eventsModel = new EventsModel({
 const filtersModel = new FiltersModel();
 
 const eventsPresenter = new EventsPresenter({
-  eventsContainer: eventsContainer,
+  eventsContainer,
   eventsModel,
   filtersModel,
   onNewEventDestroy: handleNewEventFormClose
 });
 const filtersPresenter = new FiltersPresenter({
-  filtersContainer: filtersContainer,
+  filtersContainer,
   filtersModel,
   eventsModel
 });
+
 const newEventButtonComponent = new NewEventButtonView({
   onClick: handleNewEventButtonClick
 });
@@ -43,15 +44,13 @@ function handleNewEventButtonClick() {
   newEventButtonComponent.element.disabled = true;
 }
 
-render(
-  new TripInfoView(),
-  tripInfoContainer,
-  RenderPosition.AFTERBEGIN
-);
-
-filtersPresenter.init();
-eventsPresenter.init();
-eventsModel.init()
-  .finally(() => {
+function initApplication() {
+  render(new TripInfoView(), tripInfoContainer, RenderPosition.AFTERBEGIN);
+  filtersPresenter.init();
+  eventsPresenter.init();
+  eventsModel.init().finally(() => {
     render(newEventButtonComponent, tripInfoContainer);
   });
+}
+
+initApplication();

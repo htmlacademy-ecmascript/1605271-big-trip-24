@@ -26,11 +26,17 @@ export default class EventsModel extends Observable {
 
   async init() {
     try {
-      const events = await this.#eventsApiService.events;
+      const [events, destinations, offers] = await Promise.all([
+        this.#eventsApiService.events,
+        this.#eventsApiService.destinations,
+        this.#eventsApiService.offers,
+      ]);
+
       this.#events = events.map(this.#adaptToClient);
-      this.#destinations = await this.#eventsApiService.destinations;
-      this.#offers = await this.#eventsApiService.offers;
-    } catch(err) {
+      this.#destinations = destinations;
+      this.#offers = offers;
+
+    } catch (err) {
       this.#events = [];
       this.#destinations = [];
       this.#offers = [];
@@ -40,23 +46,20 @@ export default class EventsModel extends Observable {
   }
 
   async updateEvent(updateType, update) {
-    const index = this.#events.findIndex((event) => event.id === update.id);
+    const index = this.#findEventIndex(update.id);
 
     if (index === -1) {
-      throw new Error('Can\'t update unexisting event');
+      throw new Error('Cannot update a non-existing event');
     }
 
     try {
       const response = await this.#eventsApiService.updateEvent(update);
       const updatedEvent = this.#adaptToClient(response);
 
-      this.#events = this.#events.map((event) =>
-        event.id === update.id ? updatedEvent : event
-      );
-
+      this.#events[index] = updatedEvent;
       this._notify(updateType, updatedEvent);
-    } catch(err) {
-      throw new Error('Can\'t update event');
+    } catch (err) {
+      throw new Error('Cannot update event');
     }
   }
 
@@ -64,44 +67,49 @@ export default class EventsModel extends Observable {
     try {
       const response = await this.#eventsApiService.addEvent(update);
       const newEvent = this.#adaptToClient(response);
+
       this.#events = [newEvent, ...this.#events];
       this._notify(updateType, newEvent);
-    } catch(err) {
-      throw new Error('Can\'t add event');
+    } catch (err) {
+      throw new Error('Cannot add event');
     }
   }
 
   async deleteEvent(updateType, update) {
-    const index = this.#events.findIndex((event) => event.id === update.id);
+    const index = this.#findEventIndex(update.id);
 
     if (index === -1) {
-      throw new Error('Can\'t delete unexisting event');
+      throw new Error('Cannot delete a non-existing event');
     }
 
     try {
       await this.#eventsApiService.deleteEvent(update);
-
       this.#events = this.#events.filter((event) => event.id !== update.id);
-
       this._notify(updateType);
     } catch (err) {
-      throw new Error('Can\'t delete event');
+      throw new Error('Cannot delete event');
     }
   }
 
+  #findEventIndex(id) {
+    return this.#events.findIndex((event) => event.id === id);
+  }
+
   #adaptToClient(event) {
-    const adaptedEvent = {...event,
-      basePrice: event['base_price'],
-      dateFrom: event['date_from'] !== null ? new Date(event['date_from']) : event['date_from'],
-      dateTo: event['date_to'] !== null ? new Date(event['date_to']) : event['date_to'],
-      isFavorite: event['is_favorite'],
+    const {
+      base_price: basePrice,
+      date_from: dateFrom,
+      date_to: dateTo,
+      is_favorite: isFavorite,
+      ...restEvent
+    } = event;
+
+    return {
+      ...restEvent,
+      basePrice,
+      dateFrom: dateFrom ? new Date(dateFrom) : null,
+      dateTo: dateTo ? new Date(dateTo) : null,
+      isFavorite,
     };
-
-    delete adaptedEvent['base_price'];
-    delete adaptedEvent['date_from'];
-    delete adaptedEvent['date_to'];
-    delete adaptedEvent['is_favorite'];
-
-    return adaptedEvent;
   }
 }
