@@ -3,50 +3,69 @@ import ApiService from './framework/api-service.js';
 const Method = {
   GET: 'GET',
   PUT: 'PUT',
+  POST: 'POST',
+  DELETE: 'DELETE',
+};
+
+const Endpoints = {
+  EVENTS: 'points',
+  DESTINATIONS: 'destinations',
+  OFFERS: 'offers',
 };
 
 export default class EventsApiService extends ApiService {
   get events() {
-    return this._load({url: 'points'})
-      .then(ApiService.parseResponse);
+    return this._fetchData(Endpoints.EVENTS);
   }
 
   get destinations() {
-    return this._load({url: 'destinations'})
-      .then(ApiService.parseResponse);
+    return this._fetchData(Endpoints.DESTINATIONS);
   }
 
   get offers() {
-    return this._load({url: 'offers'})
-      .then(ApiService.parseResponse);
+    return this._fetchData(Endpoints.OFFERS);
   }
 
   async updateEvent(event) {
+    return this._sendData(`${Endpoints.EVENTS}/${event.id}`, Method.PUT, event);
+  }
+
+  async addEvent(event) {
+    return this._sendData(Endpoints.EVENTS, Method.POST, event);
+  }
+
+  async deleteEvent(event) {
+    return this._load({
+      url: `${Endpoints.EVENTS}/${event.id}`,
+      method: Method.DELETE,
+    });
+  }
+
+  _fetchData(url) {
+    return this._load({ url })
+      .then(ApiService.parseResponse);
+  }
+
+  async _sendData(url, method, event) {
     const response = await this._load({
-      url: `points/${event.id}`,
-      method: Method.PUT,
+      url,
+      method,
       body: JSON.stringify(this.#adaptToServer(event)),
-      headers: new Headers({'Content-Type': 'application/json'}),
+      headers: new Headers({ 'Content-Type': 'application/json' }),
     });
 
-    const parsedResponse = await ApiService.parseResponse(response);
-
-    return parsedResponse;
+    return ApiService.parseResponse(response);
   }
 
   #adaptToServer(event) {
-    const adaptedEvent = {...event,
-      'base_price': event.basePrice,
-      'date_from': event.dateFrom instanceof Date ? event.dateFrom.toISOString() : null,
-      'date_to': event.dateTo instanceof Date ? event.dateTo.toISOString() : null,
-      'is_favorite': event.isFavorite,
+    const { basePrice, dateFrom, dateTo, isFavorite, ...rest } = event;
+
+    return {
+      ...rest,
+      'base_price': basePrice,
+      'date_from': dateFrom instanceof Date ? dateFrom.toISOString() : null,
+      'date_to': dateTo instanceof Date ? dateTo.toISOString() : null,
+      'is_favorite': isFavorite,
     };
-
-    delete adaptedEvent.basePrice;
-    delete adaptedEvent.dateFrom;
-    delete adaptedEvent.dateTo;
-    delete adaptedEvent.isFavorite;
-
-    return adaptedEvent;
   }
 }

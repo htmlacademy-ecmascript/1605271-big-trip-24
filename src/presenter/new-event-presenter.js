@@ -6,9 +6,8 @@ export default class NewEventPresenter {
   #eventsListContainer = null;
   #handleDataChange = null;
   #handleDestroy = null;
-  #event = BLANK_EVENT;
-
   #eventEditComponent = null;
+  #event = BLANK_EVENT;
 
   constructor({eventsListContainer, onDataChange, onDestroy}) {
     this.#eventsListContainer = eventsListContainer;
@@ -17,43 +16,71 @@ export default class NewEventPresenter {
   }
 
   init(allDestinations, allOffers) {
-    if (this.#eventEditComponent !== null) {
+    if (this.#eventEditComponent) {
       return;
     }
 
-    this.#eventEditComponent = new EditEventView({
-      event: this.#event,
-      allDestinations: allDestinations,
-      allOffers: allOffers,
-      onDeleteClick: this.#handleDeleteClick,
-      onFormSubmit: this.#handleFormSubmit
-    });
+    this.#eventEditComponent = this.#createEventEditComponent(allDestinations, allOffers);
+    this.#renderEventEditComponent();
 
-    render(this.#eventEditComponent, this.#eventsListContainer, RenderPosition.AFTERBEGIN);
-
-    document.addEventListener('keydown', this.#escKeyDownHandler);
+    this.#addEscKeyHandler();
   }
 
   destroy() {
-    if (this.#eventEditComponent === null) {
+    if (!this.#eventEditComponent) {
       return;
     }
 
     this.#handleDestroy();
+    this.#removeEventEditComponent();
+    this.#removeEscKeyHandler();
+  }
 
+  setSaving() {
+    this.#updateEventEditComponentState({ isDisabled: true, isSaving: true });
+  }
+
+  setAborting() {
+    const resetFormState = () => {
+      this.#updateEventEditComponentState({ isDisabled: false, isSaving: false, isDeleting: false });
+    };
+
+    this.#eventEditComponent.shake(resetFormState);
+  }
+
+  #createEventEditComponent(allDestinations, allOffers) {
+    return new EditEventView({
+      event: this.#event,
+      allDestinations,
+      allOffers,
+      onDeleteClick: this.#handleDeleteClick,
+      onFormSubmit: this.#handleFormSubmit,
+    });
+  }
+
+  #renderEventEditComponent() {
+    render(this.#eventEditComponent, this.#eventsListContainer, RenderPosition.AFTERBEGIN);
+  }
+
+  #removeEventEditComponent() {
     remove(this.#eventEditComponent);
     this.#eventEditComponent = null;
+  }
 
+  #updateEventEditComponentState(state) {
+    this.#eventEditComponent.updateElement(state);
+  }
+
+  #addEscKeyHandler() {
+    document.addEventListener('keydown', this.#escKeyDownHandler);
+  }
+
+  #removeEscKeyHandler() {
     document.removeEventListener('keydown', this.#escKeyDownHandler);
   }
 
   #handleFormSubmit = (event) => {
-    this.#handleDataChange(
-      UserAction.ADD_EVENT,
-      UpdateType.MINOR,
-      {id: Math.floor(Math.random() * (100 - 5 + 1) + 2), ...event},
-    );
-    this.destroy();
+    this.#handleDataChange(UserAction.ADD_EVENT, UpdateType.MINOR, event);
   };
 
   #handleDeleteClick = () => {

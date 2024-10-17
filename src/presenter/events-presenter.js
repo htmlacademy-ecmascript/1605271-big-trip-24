@@ -8,6 +8,12 @@ import {SortType, UpdateType, UserAction, FilterType} from '../const.js';
 import {filtersVariants} from '../utils/filters.js';
 import NewEventPresenter from './new-event-presenter.js';
 import LoadingView from '../view/loading-view.js';
+import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
+
+const TimeLimit = {
+  LOWER_LIMIT: 350,
+  UPPER_LIMIT: 1000,
+};
 
 export default class EventsPresenter {
   #eventsContainer = null;
@@ -24,6 +30,7 @@ export default class EventsPresenter {
   #currentSortType = SortType.DAY.type;
   #filterType = FilterType.EVERYTHING;
   #isLoading = true;
+  #uiBlocker = new UiBlocker(TimeLimit);
 
   constructor({eventsContainer, eventsModel, filtersModel, onNewEventDestroy}) {
     this.#eventsContainer = eventsContainer;
@@ -47,12 +54,12 @@ export default class EventsPresenter {
 
     switch (this.#currentSortType) {
       case SortType.TIME.type:
-        return filteredEvents.sort(sortTime);
+        return filteredEvents.slice().sort(sortTime);
       case SortType.PRICE.type:
-        return filteredEvents.sort(sortPrice);
+        return filteredEvents.slice().sort(sortPrice);
+      default:
+        return filteredEvents;
     }
-
-    return filteredEvents;
   }
 
   get destinations() {
@@ -68,9 +75,13 @@ export default class EventsPresenter {
   }
 
   createEvent() {
+    this.#resetFilterAndSort();
+    this.#newEventPresenter.init(this.destinations, this.offers);
+  }
+
+  #resetFilterAndSort() {
     this.#currentSortType = SortType.DAY;
     this.#filtersModel.setFilters(UpdateType.MAJOR, FilterType.EVERYTHING);
-    this.#newEventPresenter.init(this.destinations, this.offers);
   }
 
   #handleModeChange = () => {
@@ -78,19 +89,50 @@ export default class EventsPresenter {
     this.#eventPresenters.forEach((presenter) => presenter.resetView());
   };
 
-  #handleViewAction = (actionType, updateType, update) => {
-    switch (actionType) {
-      case UserAction.UPDATE_EVENT:
-        this.#eventsModel.updateEvent(updateType, update);
-        break;
-      case UserAction.ADD_EVENT:
-        this.#eventsModel.addEvent(updateType, update);
-        break;
-      case UserAction.DELETE_EVENT:
-        this.#eventsModel.deleteEvent(updateType, update);
-        break;
+  #handleViewAction = async (actionType, updateType, update) => {
+    this.#uiBlocker.block();
+
+    try {
+      switch (actionType) {
+        case UserAction.UPDATE_EVENT:
+          await this.#updateEvent(updateType, update);
+          break;
+        case UserAction.ADD_EVENT:
+          await this.#addEvent(updateType, update);
+          break;
+        case UserAction.DELETE_EVENT:
+          await this.#deleteEvent(updateType, update);
+          break;
+      }
+    } catch (err) {
+      this.#handleActionError(actionType, update.id);
     }
+
+    this.#uiBlocker.unblock();
   };
+
+  async #updateEvent(updateType, update) {
+    this.#eventPresenters.get(update.id).setSaving();
+    await this.#eventsModel.updateEvent(updateType, update);
+  }
+
+  async #addEvent(updateType, update) {
+    this.#newEventPresenter.setSaving();
+    await this.#eventsModel.addEvent(updateType, update);
+  }
+
+  async #deleteEvent(updateType, update) {
+    this.#eventPresenters.get(update.id).setDeleting();
+    await this.#eventsModel.deleteEvent(updateType, update);
+  }
+
+  #handleActionError(actionType, eventId) {
+    if (actionType === UserAction.ADD_EVENT) {
+      this.#newEventPresenter.setAborting();
+    } else {
+      this.#eventPresenters.get(eventId).setAborting();
+    }
+  }
 
   #handleModelEvent = (updateType, data) => {
     switch (updateType) {
@@ -98,11 +140,8 @@ export default class EventsPresenter {
         this.#eventPresenters.get(data.id).init(data);
         break;
       case UpdateType.MINOR:
-        this.#clearEvents();
-        this.#renderEvents();
-        break;
       case UpdateType.MAJOR:
-        this.#clearEvents({resetSortType: true});
+        this.#clearEvents({resetSortType: updateType === UpdateType.MAJOR});
         this.#renderEvents();
         break;
       case UpdateType.INIT:
@@ -114,15 +153,12 @@ export default class EventsPresenter {
   };
 
   #handleSortTypeChange = (sortType) => {
-    if (this.#currentSortType === sortType) {
-      return;
+    if (this.#currentSortType !== sortType) {
+      this.#currentSortType = sortType;
+      this.#clearSort();
+      this.#clearEvents();
+      this.#renderEvents();
     }
-
-    this.#currentSortType = sortType;
-    this.#clearSort();
-    this.#renderSort();
-    this.#clearEvents();
-    this.#renderEvents();
   };
 
   #clearSort() {
@@ -142,26 +178,9 @@ export default class EventsPresenter {
     render(this.#loadingComponent, this.#eventsContainer);
   }
 
-  #clearNoEvents() {
-    remove(this.#noEventsComponent);
-  }
-
   #renderNoEvents() {
-    this.#noEventsComponent = new NoEventsView({
-      filterType: this.#filterType
-    });
-
+    this.#noEventsComponent = new NoEventsView({filterType: this.#filterType});
     render(this.#noEventsComponent, this.#eventsContainer);
-  }
-
-  #renderEvent(event, allDestinations, allOffers) {
-    const eventPresenter = new EventPresenter({
-      eventsListComponent: this.#eventsListComponent,
-      onDataChange: this.#handleViewAction,
-      onModeChange: this.#handleModeChange
-    });
-    eventPresenter.init(event, allDestinations, allOffers);
-    this.#eventPresenters.set(event.id, eventPresenter);
   }
 
   #clearEvents({resetSortType = false} = {}) {
@@ -169,15 +188,18 @@ export default class EventsPresenter {
     this.#eventPresenters.forEach((presenter) => presenter.destroy());
     this.#eventPresenters.clear();
 
-    remove(this.#sortComponent);
-    remove(this.#loadingComponent);
-
-    if (this.#noEventsComponent) {
-      this.#clearNoEvents();
-    }
+    this.#clearSort();
+    this.#clearComponents();
 
     if (resetSortType) {
       this.#currentSortType = SortType.DAY;
+    }
+  }
+
+  #clearComponents() {
+    remove(this.#loadingComponent);
+    if (this.#noEventsComponent) {
+      remove(this.#noEventsComponent);
     }
   }
 
@@ -198,5 +220,15 @@ export default class EventsPresenter {
     this.events.forEach((event) => {
       this.#renderEvent(event, this.destinations, this.offers);
     });
+  }
+
+  #renderEvent(event, allDestinations, allOffers) {
+    const eventPresenter = new EventPresenter({
+      eventsListComponent: this.#eventsListComponent,
+      onDataChange: this.#handleViewAction,
+      onModeChange: this.#handleModeChange
+    });
+    eventPresenter.init(event, allDestinations, allOffers);
+    this.#eventPresenters.set(event.id, eventPresenter);
   }
 }
