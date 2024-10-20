@@ -46,6 +46,10 @@ export default class FilterPresenter {
   }
 
   #handleModelEvent = () => {
+    if (UpdateType === UpdateType.FAILED) {
+      remove(this.#filtersComponent);
+      return;
+    }
     this.#renderFilters();
   };
 

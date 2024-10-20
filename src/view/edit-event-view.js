@@ -78,14 +78,15 @@ function createOffersTemplate(offersByType, eventOffers, isDisabled) {
 }
 
 function createDestinationTemplate(destination) {
-  if (!destination) {
-    return '';
-  }
-  if (destination.name.length === 0) {
+  if (!destination || !destination.name) {
     return '';
   }
 
-  const {pictures, description} = destination;
+  const {pictures = [], description = ''} = destination;
+
+  if (!Array.isArray(pictures) || (pictures.length === 0 && !description.trim())) {
+    return '';
+  }
 
   return (
     `<section class="event__section event__section--destination">

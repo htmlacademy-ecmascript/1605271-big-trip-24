@@ -6,6 +6,7 @@ export default class EventsModel extends Observable {
   #events = [];
   #destinations = [];
   #offers = [];
+  failedOnLoad = false;
 
   constructor({eventsApiService}) {
     super();
@@ -40,6 +41,8 @@ export default class EventsModel extends Observable {
       this.#events = [];
       this.#destinations = [];
       this.#offers = [];
+      this._notify(UpdateType.FAILED);
+      this.failedOnLoad = true;
     }
 
     this._notify(UpdateType.INIT);

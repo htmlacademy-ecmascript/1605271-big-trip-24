@@ -13,6 +13,7 @@ const humanizeEventDueDate = (date, format) => (date ? dayjs(date).format(format
 const capitalizeFirstLetter = (str) => str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : str;
 
 const calculateDuration = (start, end) => dayjs.duration(dayjs(end).diff(dayjs(start)));
+
 const formatDuration = ({days, hours, minutes}) => {
   const d = days ? `${String(days).padStart(2, '0')}D ` : '';
   const h = hours || days ? `${String(hours).padStart(2, '0')}H ` : '';
@@ -22,12 +23,16 @@ const formatDuration = ({days, hours, minutes}) => {
 
 function formatDateDifference(startDate, endDate) {
   const calculatedDuration = calculateDuration(startDate, endDate);
+
+  const totalDays = calculatedDuration.asDays();
+
   return formatDuration({
-    days: calculatedDuration.days(),
+    days: Math.floor(totalDays),
     hours: calculatedDuration.hours(),
     minutes: calculatedDuration.minutes(),
   });
 }
+
 
 const findItemByField = (items, field, value) => items.find((item) => item[field] === value);
 
@@ -52,7 +57,8 @@ const getNullValueWeight = (a, b) => {
   return null;
 };
 
-const sortTime = (a, b) => getNullValueWeight(a.duration, b.duration) ?? calculateDuration(a.dateFrom, a.dateTo).asMilliseconds() - calculateDuration(b.dateFrom, b.dateTo).asMilliseconds();
+const sortDay = (a, b) => getNullValueWeight(a.dateFrom, b.dateFrom) ?? new Date(a.dateFrom) - new Date(b.dateFrom);
+const sortTime = (a, b) => getNullValueWeight(a.duration, b.duration) ?? calculateDuration(b.dateFrom, b.dateTo).asMilliseconds() - calculateDuration(a.dateFrom, a.dateTo).asMilliseconds();
 const sortPrice = (a, b) => getNullValueWeight(a.price, b.price) ?? b.basePrice - a.basePrice;
 
 const extractEventOfferId = (input) => input.match(/event-offer-(.*?)-1/)?.[1] || null;
@@ -67,6 +73,7 @@ export {
   isPointFuture,
   isPointPresent,
   isPointPast,
+  sortDay,
   sortTime,
   sortPrice,
   extractEventOfferId

@@ -50,6 +50,9 @@ function initApplication() {
   eventsPresenter.init();
   eventsModel.init().finally(() => {
     render(newEventButtonComponent, tripInfoContainer);
+    if (eventsModel.failedOnLoad) {
+      newEventButtonComponent.element.disabled = true;
+    }
   });
 }
 
