@@ -6,6 +6,7 @@ export default class EventsModel extends Observable {
   #events = [];
   #destinations = [];
   #offers = [];
+  failedOnLoad = false;
 
   constructor({eventsApiService}) {
     super();
@@ -40,6 +41,8 @@ export default class EventsModel extends Observable {
       this.#events = [];
       this.#destinations = [];
       this.#offers = [];
+      this._notify(UpdateType.FAILED);
+      this.failedOnLoad = true;
     }
 
     this._notify(UpdateType.INIT);
@@ -68,9 +71,7 @@ export default class EventsModel extends Observable {
       const response = await this.#eventsApiService.addEvent(update);
       const newEvent = this.#adaptToClient(response);
 
-      this.#events = this.#events.map((event) =>
-        event.id === update.id ? newEvent : event
-      );
+      this.#events = [newEvent, ...this.#events];
       this._notify(updateType, newEvent);
     } catch (err) {
       throw new Error('Can\'t add event');

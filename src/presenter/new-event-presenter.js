@@ -5,13 +5,15 @@ import {UserAction, UpdateType, BLANK_EVENT} from '../const.js';
 export default class NewEventPresenter {
   #eventsListContainer = null;
   #handleDataChange = null;
+  #handleModelEvent = null;
   #handleDestroy = null;
   #eventEditComponent = null;
   #event = BLANK_EVENT;
 
-  constructor({eventsListContainer, onDataChange, onDestroy}) {
+  constructor({eventsListContainer, onDataChange, onModelEvent, onDestroy}) {
     this.#eventsListContainer = eventsListContainer;
     this.#handleDataChange = onDataChange;
+    this.#handleModelEvent = onModelEvent;
     this.#handleDestroy = onDestroy;
   }
 
@@ -84,12 +86,18 @@ export default class NewEventPresenter {
   };
 
   #handleDeleteClick = () => {
+    this.#handleModelEvent(
+      UpdateType.MINOR,
+    );
     this.destroy();
   };
 
   #escKeyDownHandler = (evt) => {
     if (evt.key === 'Escape' || evt.key === 'Esc') {
       evt.preventDefault();
+      this.#handleModelEvent(
+        UpdateType.MINOR,
+      );
       this.destroy();
     }
   };

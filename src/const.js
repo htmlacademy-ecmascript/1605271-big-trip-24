@@ -46,6 +46,7 @@ const UpdateType = {
   MINOR: 'MINOR',
   MAJOR: 'MAJOR',
   INIT: 'INIT',
+  FAILED: 'FAILED'
 };
 
 export {INPUT_DATE_FORMAT, BLANK_EVENT, FilterType, SortType, UserAction, UpdateType};

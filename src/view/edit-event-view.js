@@ -78,14 +78,15 @@ function createOffersTemplate(offersByType, eventOffers, isDisabled) {
 }
 
 function createDestinationTemplate(destination) {
-  if (!destination) {
-    return '';
-  }
-  if (destination.name.length === 0) {
+  if (!destination || !destination.name) {
     return '';
   }
 
-  const {pictures, description} = destination;
+  const {pictures = [], description = ''} = destination;
+
+  if (!Array.isArray(pictures) || (pictures.length === 0 && !description.trim())) {
+    return '';
+  }
 
   return (
     `<section class="event__section event__section--destination">
@@ -174,14 +175,14 @@ function createEditEventTemplate(event, allDestinations, allOffers, isCreate) {
           <button class="event__save-btn  btn  btn--blue" type="submit" ${isDisabled ? 'disabled' : ''}>
             ${isSaving ? 'Saving...' : 'Save'}
           </button>
-          <button class="event__reset-btn" type="reset" ${isDisabled ? 'disabled' : ''}>
+          <button class="event__reset-btn" type="reset">
             ${isCreate ? 'Cancel' : `${isDeleting ? 'Deleting...' : 'Delete'}`}
           </button>
           ${
     isCreate
       ? ''
       : `
-          <button class="event__rollup-btn" type="button" ${isDisabled ? 'disabled' : ''}>
+          <button class="event__rollup-btn" type="button">
             <span class="visually-hidden">Toggle event</span>
           </button>
         `
@@ -313,6 +314,7 @@ export default class EditEventView extends AbstractStatefulView {
     evt.preventDefault();
     this.updateElement({
       type: evt.target.value,
+      offers: [],
     });
   };
 
