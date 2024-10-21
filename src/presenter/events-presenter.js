@@ -1,7 +1,7 @@
 import SortView from '../view/sort-view.js';
 import EventsListView from '../view/events-list-view.js';
 import NoEventsView from '../view/no-events-view.js';
-import {render, remove} from '../framework/render.js';
+import {render, remove, RenderPosition} from '../framework/render.js';
 import EventPresenter from './event-presenter.js';
 import {sortDay, sortPrice, sortTime} from '../utils/event.js';
 import {SortType, UpdateType, UserAction, FilterType} from '../const.js';
@@ -43,6 +43,7 @@ export default class EventsPresenter {
     this.#newEventPresenter = new NewEventPresenter({
       eventsListContainer: this.#eventsListComponent.element,
       onDataChange: this.#handleViewAction,
+      onModelEvent: this.#handleModelEvent,
       onDestroy: onNewEventDestroy
     });
 
@@ -80,10 +81,13 @@ export default class EventsPresenter {
   createEvent() {
     this.#resetFilterAndSort();
     this.#newEventPresenter.init(this.destinations, this.offers);
+    if (this.#noEventsComponent) {
+      remove(this.#noEventsComponent);
+    }
   }
 
   #resetFilterAndSort() {
-    this.#currentSortType = SortType.DAY;
+    this.#currentSortType = SortType.DAY.type;
     this.#filtersModel.setFilters(UpdateType.MAJOR, FilterType.EVERYTHING);
   }
 
@@ -143,6 +147,9 @@ export default class EventsPresenter {
         this.#eventPresenters.get(data.id).init(data);
         break;
       case UpdateType.MINOR:
+        this.#clearEvents();
+        this.#renderEvents();
+        break;
       case UpdateType.MAJOR:
         this.#clearEvents({resetSortType: updateType === UpdateType.MAJOR});
         this.#renderEvents();
@@ -179,7 +186,7 @@ export default class EventsPresenter {
       currentSortType: this.#currentSortType
     });
 
-    render(this.#sortComponent, this.#eventsContainer);
+    render(this.#sortComponent, this.#eventsContainer, RenderPosition.AFTERBEGIN);
   }
 
   #renderFailedLoad() {
@@ -204,7 +211,7 @@ export default class EventsPresenter {
     this.#clearComponents();
 
     if (resetSortType) {
-      this.#currentSortType = SortType.DAY;
+      this.#currentSortType = SortType.DAY.type;
     }
   }
 
@@ -216,6 +223,8 @@ export default class EventsPresenter {
   }
 
   #renderEvents() {
+    render(this.#eventsListComponent, this.#eventsContainer);
+
     if (this.#isFailed) {
       this.#renderFailedLoad();
       return;
@@ -232,7 +241,6 @@ export default class EventsPresenter {
     }
 
     this.#renderSort();
-    render(this.#eventsListComponent, this.#eventsContainer);
 
     this.events.forEach((event) => {
       this.#renderEvent(event, this.destinations, this.offers);

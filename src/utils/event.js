@@ -61,7 +61,7 @@ const sortDay = (a, b) => getNullValueWeight(a.dateFrom, b.dateFrom) ?? new Date
 const sortTime = (a, b) => getNullValueWeight(a.duration, b.duration) ?? calculateDuration(b.dateFrom, b.dateTo).asMilliseconds() - calculateDuration(a.dateFrom, a.dateTo).asMilliseconds();
 const sortPrice = (a, b) => getNullValueWeight(a.price, b.price) ?? b.basePrice - a.basePrice;
 
-const extractEventOfferId = (input) => input.match(/event-offer-(.*?)-1/)?.[1] || null;
+const extractEventOfferId = (input) => input.match(/event-offer-(.*?-1)/)?.[1] || null;
 
 export {
   humanizeEventDueDate,
