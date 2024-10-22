@@ -2,7 +2,7 @@ import {render, replace, remove} from '../framework/render.js';
 import FiltersView from '../view/filters-view.js';
 import {FilterType, UpdateType} from '../const.js';
 
-export default class FilterPresenter {
+export default class FiltersPresenter {
   #filtersContainer = null;
   #filtersModel = null;
   #eventsModel = null;
