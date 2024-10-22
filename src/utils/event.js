@@ -44,22 +44,22 @@ const isPointFuture = (startDate) => dayjs(startDate).isAfter(now());
 const isPointPresent = (startDate, endDate) => dayjs(startDate).isSameOrBefore(now()) && dayjs(endDate).isSameOrAfter(now());
 const isPointPast = (endDate) => dayjs(endDate).isBefore(now());
 
-const getNullValueWeight = (a, b) => {
-  if (a === null && b === null) {
+const getNullValueWeight = (firstValue, secondValue) => {
+  if (firstValue === null && secondValue === null) {
     return 0;
   }
-  if (a === null) {
+  if (firstValue === null) {
     return 1;
   }
-  if (b === null) {
+  if (secondValue === null) {
     return -1;
   }
   return null;
 };
 
-const sortDay = (a, b) => getNullValueWeight(a.dateFrom, b.dateFrom) ?? new Date(a.dateFrom) - new Date(b.dateFrom);
-const sortTime = (a, b) => getNullValueWeight(a.duration, b.duration) ?? calculateDuration(b.dateFrom, b.dateTo).asMilliseconds() - calculateDuration(a.dateFrom, a.dateTo).asMilliseconds();
-const sortPrice = (a, b) => getNullValueWeight(a.price, b.price) ?? b.basePrice - a.basePrice;
+const sortDay = (firstItem, secondItem) => getNullValueWeight(firstItem.dateFrom, secondItem.dateFrom) ?? new Date(firstItem.dateFrom) - new Date(secondItem.dateFrom);
+const sortTime = (firstItem, secondItem) => getNullValueWeight(firstItem.duration, secondItem.duration) ?? calculateDuration(secondItem.dateFrom, secondItem.dateTo).asMilliseconds() - calculateDuration(firstItem.dateFrom, firstItem.dateTo).asMilliseconds();
+const sortPrice = (firstItem, secondItem) => getNullValueWeight(firstItem.price, secondItem.price) ?? secondItem.basePrice - firstItem.basePrice;
 
 const extractEventOfferId = (input) => input.match(/event-offer-(.*?-1)/)?.[1] || null;
 
